@@ -5,7 +5,7 @@ const facture=require("../controllers/facture")
 router.get("/get",facture.getall);
 router.post("/add",facture.insert);
 router.put("/update",facture.update);
-router.delete("/delete",facture.delete);
+router.delete("/delete/:id",facture.delete);
 
 //commet
 
