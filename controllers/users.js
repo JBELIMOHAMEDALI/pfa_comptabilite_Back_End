@@ -1,4 +1,4 @@
-const queryy =require("./db_query");
+
 
 exports.getall=(req,res)=>{
     const sql="select * from users";
@@ -21,10 +21,5 @@ exports.update=(req,res)=>{
 exports.delete=(req,res)=>{
     const values=[req.params.id];
     const sql="delete from users where id_users = ?";
-    queryy.sql_request(sql,values,res);
-}
-exports.login=(req,res)=>{
-    const values=[req.body.email,req.body.passe];
-    const sql="select * from users where email = ? et mot_passe = ?";
     queryy.sql_request(sql,values,res);
 }

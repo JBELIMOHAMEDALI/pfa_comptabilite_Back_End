@@ -6,7 +6,6 @@ router.get("/get",user.getall);
 router.post("/add",user.insert);
 router.put("/update",user.update);
 router.delete("/delete",user.delete);
-router.get("/login",user.login);
 //commet
 
 
