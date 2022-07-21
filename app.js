@@ -6,6 +6,7 @@ const test_tab=require("./routes/tab_test");//blopckage du accsses
 const users =require("./routes/users")
 const facture =require("./routes/facture")
 const auth =require("./routes/authentification")
+const societe =require("./routes/societe")
 app.use(express.urlencoded({extended: true}));  
 app.use(express.json());
 db.connect((error)=>{
@@ -20,6 +21,7 @@ app.use("/test_tab",test_tab)
 app.use("/users",users)
 app.use("/facture",facture)
 app.use("/auth",auth)
+app.use("/societe",societe)
 
 //commet
 module.exports=app;
