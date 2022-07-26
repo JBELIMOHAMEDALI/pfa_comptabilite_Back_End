@@ -8,6 +8,5 @@ router.put("/update",societe.update);
 router.delete("/delete/:id",societe.delete);
 //commet
 
-
 module.exports=router;
  

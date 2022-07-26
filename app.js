@@ -8,6 +8,10 @@ const facture =require("./routes/facture")
 const auth =require("./routes/authentification")
 const societe =require("./routes/societe")
 const plan_comptable =require("./routes/plan_comptable")
+const plan_comptable2 =require("./routes/plan_comptable2")
+app.use(cors({
+    origin:"http://localhost:4200",
+}))
 
 app.use(express.urlencoded({extended: true}));  
 app.use(express.json());
@@ -18,13 +22,17 @@ if(error){
     console.log("Connecte to db ")
 }
 })
-app.use(cors())
+
 app.use("/test_tab",test_tab)
 app.use("/users",users)
 app.use("/facture",facture)
 app.use("/auth",auth)
 app.use("/societe",societe)
+app.use("/test",plan_comptable2)
 app.use("/plan_comptable",plan_comptable)
 
 //commet
+app.use((req, res) => {
+    res.status(404).json({ error: 'api not found' })
+  })
 module.exports=app;

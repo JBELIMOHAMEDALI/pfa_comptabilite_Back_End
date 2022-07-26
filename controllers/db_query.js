@@ -22,7 +22,8 @@ module.exports.sql_request=(sql,values,res)=>{
         else{
             return res.status(500).json({
                 err:true,
-                 message:err.sqlMessage
+                 message:err.sqlMessage,
+                 //reqq:values
                // message:err.sqlMessage.includes('Duplicate')?'Redondances de données ! ':'Opération non effectuée ! Réessayer plus tard',
             });
         }
