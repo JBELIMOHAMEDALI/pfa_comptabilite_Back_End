@@ -4,7 +4,7 @@ const db = require("./db_connection");//connection db
 const cors=require("cors");//blopckage du accsses
 const test_tab=require("./routes/tab_test");//blopckage du accsses
 const users =require("./routes/users")
-const facture =require("./routes/facture")
+// const facture =require("./routes/facture")
 const auth =require("./routes/authentification")
 const societe =require("./routes/societe")
 const plan_comptable =require("./routes/plan_comptable")
@@ -26,7 +26,7 @@ if(error){
 
 app.use("/test_tab",test_tab)
 app.use("/users",users)
-app.use("/facture",facture)
+// app.use("/facture",facture)
 app.use("/auth",auth)
 app.use("/societe",societe)
 app.use("/test",plan_comptable2)
