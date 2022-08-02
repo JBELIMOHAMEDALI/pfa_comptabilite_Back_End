@@ -9,6 +9,7 @@ const auth =require("./routes/authentification")
 const societe =require("./routes/societe")
 const plan_comptable =require("./routes/plan_comptable")
 const plan_comptable2 =require("./routes/plan_comptable2")
+const taxe=require("./routes/taxe")
 app.use(cors({
     origin:"http://localhost:4200",
 }))
@@ -30,6 +31,7 @@ app.use("/auth",auth)
 app.use("/societe",societe)
 app.use("/test",plan_comptable2)
 app.use("/plan_comptable",plan_comptable)
+app.use("/taxe",taxe)
 
 //commet
 app.use((req, res) => {
