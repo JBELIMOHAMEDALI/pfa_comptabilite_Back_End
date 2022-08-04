@@ -14,7 +14,7 @@ exports.validate = (req, res) => {
       if (err)
         return res.status(500).json({
           err: true,
-          message: 'Operation not performed ! Try again later',
+          message: "Operation not performed ! Try again later",
         });
 
       if (rows.length === 1) {
@@ -22,7 +22,15 @@ exports.validate = (req, res) => {
         sql = `UPDATE USER SET actif=?,crypted=? where crypted=?`;
         return query.sql_request(
           sql,
-          ["1", crypted_user + ";" + encryption.encryptData(lastname) + ";" + encryption.encryptData(firstname), crypted_user],
+          [
+            "1",
+            crypted_user +
+              "." +
+              encryption.encryptData(lastname) +
+              "." +
+              encryption.encryptData(firstname),
+            crypted_user,
+          ],
           res
         );
       } else
@@ -30,7 +38,6 @@ exports.validate = (req, res) => {
           err: true,
           message: "Account activation failed !",
         });
-
     });
   } catch (error) {
     return res.status(500).json({
@@ -60,7 +67,7 @@ exports.signin = (req, res) => {
           });
         }
         if (same) {
-          const { id_user, crypted } = rows[0]
+          const { id_user, crypted } = rows[0];
           sql = `    
                 SELECT company.*, COUNT(id_company) as nb_companies
                 FROM COMPANY JOIN user 
@@ -69,18 +76,12 @@ exports.signin = (req, res) => {
               `;
           dbClient.query(sql, [id_user], (err, rows) => {
             if (!err) {
-              console.log(rows);
-              // const {
-              //   id_user,
-              //   id_company,
-              //   crypted, 
-              //   nb_companies                     
-              // } = rows[0];
+              const {nb_companies}=rows[0];
               const payload = {
                 id_user,
                 crypted,
-                nb_companies: rows[0].nb_companies,
-                companies: rows
+                nb_companies: nb_companies,
+                companies: nb_companies > 0 ? rows : [],
               };
               const token = jwt.sign(
                 {
@@ -101,7 +102,6 @@ exports.signin = (req, res) => {
               });
             }
           });
-
         } else {
           return res.status(404).json({
             err: true,
@@ -109,8 +109,7 @@ exports.signin = (req, res) => {
           });
         }
       });
-    }
-    else {
+    } else {
       return res.status(404).json({
         err: true,
         message: "Auth failed ! Check email AND/OR password ",
@@ -120,13 +119,7 @@ exports.signin = (req, res) => {
 };
 
 exports.signup = (req, res) => {
-  const {
-    email,
-    password,
-    firstname,
-    lastname,
-    birthdate,
-  } = req.body;
+  const { email, password, firstname, lastname, birthdate } = req.body;
   let sql = "";
   sql = "select * from user where email = ? ";
   dbClient.query(sql, [email], (err, rows) => {
@@ -142,14 +135,16 @@ exports.signup = (req, res) => {
           if (err) {
             return res.status(500).json({
               err,
-              message: "error in hashing password !",
+              message: "error in hashing password ! Retry later",
             });
           }
           const encryptedMail = encryption.encryptData(email);
           const mailPayload = {
             receivers: email,
             subject: "ACOUNT VERIFICATION",
-            text: `Hi ${lastname + " " + firstname} , Please activate your account via this url 
+            text: `Hi ${
+              lastname + " " + firstname
+            } , Please activate your account via this url 
                 ${process.env.CORS_ORIGIN}/account/${encryptedMail}`,
           };
           mailer(mailPayload)
@@ -177,11 +172,11 @@ exports.signup = (req, res) => {
                   }
 
                   return res.status(200).json({
-
                     err: false,
                     rows: rows,
-                    message: 'User registred ! Please check your email (principal or spam) in order to verify your account '
-                  })
+                    message:
+                      "User registred ! Please check your email (principal or spam) in order to verify your account ",
+                  });
                 }
               );
             })
@@ -196,14 +191,173 @@ exports.signup = (req, res) => {
     } else
       return res.status(500).json({
         err: true,
-        message: 'Operation not performed! Try again later',
+        message: "Operation not performed! Try again later",
       });
   });
 };
 
-exports.reset = (req, res) => {
-  res.send("reset")
+exports.verify_reset_email = (req, res,next) => {
+  const { email } = req.body;
+  let sql = "";
+  sql = "select * from user where email = ? ";
+  dbClient.query(sql, [email], (err, rows) => {
+    if (!err) {
+      switch (rows.length) {
+        case 0:
+          return res.status(404).json({
+            err: true,
+            message: "This email doesn't exist ! ",
+          });
+        case 1:
+          const resetCode = generateCode();
+          bcrypt.hash(resetCode, 10, (err, hashedCode) => {
+            if (err) {
+              return res.status(500).json({
+                err,
+                message: "error in hashing reset code ! Retry later",
+              });
+            }
+            const mailPayload = {
+              receivers: email,
+              subject: "ACCOUNT RESET PASSWORD",
+              text: `Hi you can reset your password account using this code : ${resetCode}`,
+            };
+            mailer(mailPayload)
+              .then((result) => {
+
+                dbClient.query(
+                  "UPDATE user SET reset_code=? where email=? ",
+                  [hashedCode, email],
+                  (err, rows) => {
+                    if (err) {
+                      return res.status(500).json({
+                        err: true,
+                        message: err.sqlMessage,
+                      });
+                    }
+
+                    return res.status(200).json({
+                      err: false,
+                      message: "Verified ! An activation code has been sent to this email address ",
+                    });
+
+                    // req.userMail = {
+                    //   email
+                    // };
+                    // next();
+                  }
+                );
+              })
+              .catch((err) => {
+                return res.status(500).json({
+                  err: true,
+                  result: err,
+                });
+              });
+          });
+          break;
+        default:
+          return res.status(500).json({
+            err: true,
+            message: "Operation not performed! Try again later",
+          });
+      }
+    } else
+      return res.status(500).json({
+        err: true,
+        message: "Operation not performed! Try again later",
+      });
+  });
+};
+exports.verify_reset_code = (req, res) => {
+  const { email,code } = req.body;
+  let sql = "";
+  sql = "select reset_code from user where email = ? ";
+  // dbClient.query(sql, [email], (err, rows) => {
+    
+  //   if (!err) {
+  //     switch (rows.length) {
+  //       case 0:
+  //         return res.status(404).json({
+  //           err: true,
+  //           message: "This code doesn't exist ! ",
+  //         });
+  //       case 1:
+  //         return res.status(200).json({
+  //           err: false,
+  //           message: "Valid code ! ",
+  //         });
+  //       default:
+  //         return res.status(500).json({
+  //           err: true,
+  //           message: "Operation not performed ! Try again later",
+  //         });
+  //     }
+  //   } else
+  //     return res.status(500).json({
+  //       err: true,
+  //       message: "Operation not performed! Try again later",
+  //     });
+  // });
+
+  dbClient.query(sql, [email], (err, rows) => {
+    if (err) {
+      return res.status(500).json({
+        err: true,
+        message: "An error occured in server ! Retry later ",
+      });
+    }
+    if (rows.length == 1) {
+
+      bcrypt.compare(code, rows[0].reset_code, (err, same) => {
+        if (err) {
+          return res.status(500).json({
+            err: true,
+            message: "An error occured in server ! Retry later ",
+          });
+        }
+        if (same) {
+          return res.status(200).json({
+            err: false,
+            message: "Code matches succefully ! ",
+          });
+        } else {
+          return res.status(404).json({
+            err: true,
+            message: "Verify your code ! ",
+          });
+        }
+      });
+    } else {
+      return res.status(404).json({
+        err: true,
+        message: "Reset failed ! Check your email address ",
+      });
+    }
+  });
+
+};
+
+function generateCode() {
+  return Math.random().toString().substring(2, 8);
 }
+
+exports.reset_password = (req, res) => {
+  const { newPassword, email, code } = req.body;
+  bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+    if (err) {
+      return res.status(500).json({
+        err,
+        message: "An error occured in server ! Retry later ",
+      });
+    }
+
+    const sql =
+      "UPDATE user SET password = ?  WHERE email = ? ";
+    return query.sql_request(sql, [hashedPassword,  email], res);
+  });
+};
+
 exports.googlesignin = (req, res) => {
-  res.send("google_signin")
-}
+  res.send("google_signin");
+};

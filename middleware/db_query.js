@@ -8,7 +8,7 @@ module.exports.sql_request=(sql,values,res)=>{
                 
                     err:false,
                     rows:rows,
-                    message:'successful operation'
+                    message:'Successful operation !'
                 })
             else
               return  res.status(404).json({

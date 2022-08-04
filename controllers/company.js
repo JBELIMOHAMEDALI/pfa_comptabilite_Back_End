@@ -5,7 +5,6 @@ exports.getall=(req,res)=>{
     queryy.sql_request(sql,null,res);
  
 };
-//commet
 exports.insert=(req,res)=>{
     const {nom_societe,domaine_societe}=req.body;
     const values=[[[nom_societe,domaine_societe]]];
