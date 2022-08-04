@@ -272,7 +272,7 @@ exports.verify_reset_email = (req, res,next) => {
 exports.verify_reset_code = (req, res) => {
   const { email,code } = req.body;
   let sql = "";
-  sql = "select reset_code from user where email = ? ";
+  sql = "select reset_code from user where email = ? and actif =?";
   // dbClient.query(sql, [email], (err, rows) => {
     
   //   if (!err) {
@@ -300,7 +300,7 @@ exports.verify_reset_code = (req, res) => {
   //     });
   // });
 
-  dbClient.query(sql, [email], (err, rows) => {
+  dbClient.query(sql, [email,"1"], (err, rows) => {
     if (err) {
       return res.status(500).json({
         err: true,
@@ -331,7 +331,7 @@ exports.verify_reset_code = (req, res) => {
     } else {
       return res.status(404).json({
         err: true,
-        message: "Reset failed ! Check your email address ",
+        message: "Reset failed ! Check your email address or your account activation",
       });
     }
   });
@@ -343,21 +343,21 @@ function generateCode() {
 }
 
 exports.reset_password = (req, res) => {
-  const { newPassword, email, code } = req.body;
+  const { newPassword, email } = req.body;
   bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
     if (err) {
       return res.status(500).json({
+        
         err,
         message: "An error occured in server ! Retry later ",
       });
     }
 
     const sql =
-      "UPDATE user SET password = ?  WHERE email = ? ";
-    return query.sql_request(sql, [hashedPassword,  email], res);
+      "UPDATE user SET password = ?,reset_code=?  WHERE email = ? ";
+    return query.sql_request(sql, [hashedPassword,  email,null], res);
   });
 };
 
 exports.googlesignin = (req, res) => {
-  res.send("google_signin");
 };

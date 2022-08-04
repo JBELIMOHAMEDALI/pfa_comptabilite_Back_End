@@ -16,6 +16,7 @@ app.use(
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 db.connect((error) => {
   if (error) throw error;
   console.log("Connected to db ");

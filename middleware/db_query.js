@@ -12,10 +12,9 @@ module.exports.sql_request=(sql,values,res)=>{
                 })
             else
               return  res.status(404).json({
-                    err:false,
-                    rows:[],
-                    //message:"Aucune données trouvées ! "
-                    message:err,
+                    // err:true,
+                    message:"No (data,operation) (found,done) ! "
+                    // message:err,
                 })        
         }
     
