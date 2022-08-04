@@ -3,6 +3,7 @@ const dbClient = require("../db_connection");
 const jwt = require("jsonwebtoken");
 const mailer = require("../middleware/mailer");
 const encryption = require("../middleware/encryption");
+const query = require("../middleware/db_query");
 
 exports.validate = (req, res) => {
   const crypted_user = req.params.hasheduser;
@@ -27,7 +28,7 @@ exports.validate = (req, res) => {
         } else 
           return res.status(404).json({
             err: true,
-            message: "Account activation failed ! Try again later",
+            message: "Account activation failed !",
           });
        
     });
@@ -59,7 +60,6 @@ exports.signin = (req, res) => {
             });
           }
           if (same) {
-           
                 sql = `    
                   SELECT DISTINCT user.*,company.* 
                   FROM user JOIN company 
@@ -68,6 +68,7 @@ exports.signin = (req, res) => {
               `;
                 dbClient.query(sql, [email], (err, rows) => {
                   if (!err) {
+                    console.log(rows);
                     const {
                       id_user,
                       id_company,
@@ -101,7 +102,7 @@ exports.signin = (req, res) => {
                   }else{
                     return res.status(500).json({
                       err: true,
-                      message: "An error occured in server !  ",
+                      message: "Auth failed ! Check email AND/OR password ",
                     });
                   }
                 });              
@@ -157,9 +158,9 @@ exports.signup = (req, res) => {
                     [
                       lastname.charAt(0).toUpperCase() + lastname.slice(1),
                       firstname.charAt(0).toUpperCase() + firstname.slice(1),
+                      birthdate,
                       email,
                       hashedPassword,
-                      birthdate,
                       encryptedMail,
                     ],
                   ],
