@@ -11,26 +11,26 @@ exports.validate = (req, res) => {
   try {
     sql = "select * from user where crypted = ? and actif = ?";
     dbClient.query(sql, [crypted_user, "0"], (err, rows) => {
-      if (err) 
+      if (err)
         return res.status(500).json({
           err: true,
           message: 'Operation not performed ! Try again later',
         });
-      
-        if (rows.length === 1) {
-          const { lastname, firstname } = rows[0];
-          sql = `UPDATE USER SET actif=?,crypted=? where crypted=?`;
-          return query.sql_request(
-            sql,
-            ["1", crypted_user+";"+encryption.encryptData(lastname )+";"+ encryption.encryptData(firstname ), crypted_user],
-            res
-          );
-        } else 
-          return res.status(404).json({
-            err: true,
-            message: "Account activation failed !",
-          });
-       
+
+      if (rows.length === 1) {
+        const { lastname, firstname } = rows[0];
+        sql = `UPDATE USER SET actif=?,crypted=? where crypted=?`;
+        return query.sql_request(
+          sql,
+          ["1", crypted_user + ";" + encryption.encryptData(lastname) + ";" + encryption.encryptData(firstname), crypted_user],
+          res
+        );
+      } else
+        return res.status(404).json({
+          err: true,
+          message: "Account activation failed !",
+        });
+
     });
   } catch (error) {
     return res.status(500).json({
@@ -42,78 +42,81 @@ exports.validate = (req, res) => {
 
 exports.signin = (req, res) => {
   const { email, password } = req.body;
-  let sql = `SELECT DISTINCT user.* from user where USER.email=? AND USER.actif=?`;
+  let sql = ` SELECT DISTINCT user.* from user where USER.email=? AND USER.actif=? `;
 
   dbClient.query(sql, [email, "1"], (err, rows) => {
-    if(err){
+    if (err) {
       return res.status(500).json({
         err: true,
         message: "An error occured in server !  ",
       });
     }
-      if (rows.length == 1) {
-        bcrypt.compare(password, rows[0].password, (err, same) => {
-          if (err) {
-            return res.status(500).json({
-              err: true,
-              message: "An error occured in server !  ",
-            });
-          }
-          if (same) {
-                sql = `    
-                  SELECT DISTINCT user.*,company.* 
-                  FROM user JOIN company 
-                  ON company.id_user=user.id_user                  
-                  where user.email=?
+    if (rows.length == 1) {
+      bcrypt.compare(password, rows[0].password, (err, same) => {
+        if (err) {
+          return res.status(500).json({
+            err: true,
+            message: "An error occured in server !  ",
+          });
+        }
+        if (same) {
+          const { id_user, crypted } = rows[0]
+          sql = `    
+                SELECT company.*, COUNT(id_company) as nb_companies
+                FROM COMPANY JOIN user 
+                ON company.id_user=user.id_user                  
+                where user.id_user=?
               `;
-                dbClient.query(sql, [email], (err, rows) => {
-                  if (!err) {
-                    console.log(rows);
-                    const {
-                      id_user,
-                      id_company,
-                      crypted,                      
-                    } = rows[0];
-                    const payload = {
-                      id_user,
-                      id_company,
-                      crypted,  
-                    };
-                    const token = jwt.sign(
-                      {
-                        userData: payload,
-                      },
-                      process.env.JWT_USER_KEY,
-                      { expiresIn: "7d" }
-                    );
-                    return res.status(200).json({
-                      err: false,
-                      message: "Auth successfull !",
-                      token: token,
-                    });
-                  }else{
-                    return res.status(500).json({
-                      err: true,
-                      message: "Auth failed ! Check email AND/OR password ",
-                    });
-                  }
-                });
-              
-                  }else{
-                    return res.status(500).json({
-                      err: true,
-                      message: "Auth failed ! Check email AND/OR password ",
-                    });
-                  }
-                });              
+          dbClient.query(sql, [id_user], (err, rows) => {
+            if (!err) {
+              console.log(rows);
+              // const {
+              //   id_user,
+              //   id_company,
+              //   crypted, 
+              //   nb_companies                     
+              // } = rows[0];
+              const payload = {
+                id_user,
+                crypted,
+                nb_companies: rows[0].nb_companies,
+                companies: rows
+              };
+              const token = jwt.sign(
+                {
+                  userData: payload,
+                },
+                process.env.JWT_USER_KEY,
+                { expiresIn: process.env.EXPIRES_IN }
+              );
+              return res.status(200).json({
+                err: false,
+                message: "Auth successfull !",
+                token: token,
+              });
+            } else {
+              return res.status(500).json({
+                err: true,
+                message: "An error occured in server !",
+              });
             }
-          else{
-            return res.status(404).json({
-              err: true,
-              message: "Auth failed ! Check email AND/OR password ",
-            });
-          }
-        });
+          });
+
+        } else {
+          return res.status(404).json({
+            err: true,
+            message: "Auth failed ! Check email AND/OR password ",
+          });
+        }
+      });
+    }
+    else {
+      return res.status(404).json({
+        err: true,
+        message: "Auth failed ! Check email AND/OR password ",
+      });
+    }
+  });
 };
 
 exports.signup = (req, res) => {
@@ -146,7 +149,7 @@ exports.signup = (req, res) => {
           const mailPayload = {
             receivers: email,
             subject: "ACOUNT VERIFICATION",
-            text: `Hi ${lastname+ " "+firstname} , Please activate your account via this url 
+            text: `Hi ${lastname + " " + firstname} , Please activate your account via this url 
                 ${process.env.CORS_ORIGIN}/account/${encryptedMail}`,
           };
           mailer(mailPayload)
@@ -168,17 +171,17 @@ exports.signup = (req, res) => {
                 (err, rows) => {
                   if (err) {
                     return res.status(500).json({
-                      err:true,
+                      err: true,
                       message: err.sqlMessage,
                     });
                   }
 
                   return res.status(200).json({
-                
-                    err:false,
-                    rows:rows,
-                    message:'User registred ! Please check your email (principal or spam) in order to verify your account '
-                })
+
+                    err: false,
+                    rows: rows,
+                    message: 'User registred ! Please check your email (principal or spam) in order to verify your account '
+                  })
                 }
               );
             })
@@ -198,9 +201,9 @@ exports.signup = (req, res) => {
   });
 };
 
-exports.reset=(req,res)=>{
+exports.reset = (req, res) => {
   res.send("reset")
 }
-exports.googlesignin=(req,res)=>{
+exports.googlesignin = (req, res) => {
   res.send("google_signin")
 }
