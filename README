@@ -1,0 +1,13 @@
+for running the project you have to :
+1)open terminal 
+2)in source folder install node_modules by typing "npm install"
+3)if doesn't exist create .env file in the source folder
+4)configure .env file 
+example :
+CORS_ORIGIN=http://localhost:4200
+DB_HOST=localhost
+DB_USER=root
+DB_PWD=
+DB_NAME=pfa_comptable
+JWT_KEY=5b20be465dede87b12eeddbcda24f5a089b022dd059a5d4e90fe61f040b969b1c794ff1ce9497821289b7c9eabbb1ac8
+5)back in the terminal and run "npm start"

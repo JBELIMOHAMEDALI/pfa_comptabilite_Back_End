@@ -1,7 +1,6 @@
 module.exports = require('mysql').createConnection({
-    host: "localhost",
-    user: "root",
-    password: '',
-    database: "pfa_comptable",
-    multipleStatements:true
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PWD,
+    database: process.env.DB_NAME,
 });

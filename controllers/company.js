@@ -1,4 +1,4 @@
-const queryy =require("./db_query");
+const queryy =require("../middleware/db_query");
 
 exports.getall=(req,res)=>{
     const sql="select * from societe";
