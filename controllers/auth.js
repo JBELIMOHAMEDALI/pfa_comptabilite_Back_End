@@ -355,7 +355,7 @@ exports.reset_password = (req, res) => {
 
     const sql =
       "UPDATE user SET password = ?,reset_code=?  WHERE email = ? ";
-    return query.sql_request(sql, [hashedPassword,  email,null], res);
+    return query.sql_request(sql, [hashedPassword, null,  email], res);
   });
 };
 
