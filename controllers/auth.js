@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const dbClient = require("../db_connection");
+const dbClient = require("../config/db_config");
 const jwt = require("jsonwebtoken");
 const mailer = require("../middleware/mailer");
 const encryption = require("../middleware/encryption");
@@ -359,5 +359,7 @@ exports.reset_password = (req, res) => {
   });
 };
 
-exports.googlesignin = (req, res) => {
-};
+
+//The Client ID is a public identifier of your application. 
+// The Client Secret is confidential and should only be used to 
+// authenticate your application and make requests to LinkedIn's APIs
