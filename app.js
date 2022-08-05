@@ -5,7 +5,7 @@ const db = require("./config/db_config"); //connection db
 const cors = require("cors"); //blockage acces
 const auth = require("./routes/auth");
 
-// const googleAuth = require("./routes/googleAuth");
+const googleAuth = require("./routes/googleAuth");
 
 const company = require("./routes/company");
 const plan_comptable = require("./routes/plan_comptable");
@@ -41,24 +41,10 @@ app.use("/auth/user", auth);
 app.use("/company", company);
 app.use("/plan_comptable", plan_comptable);
 app.use("/tax", tax);
-app.get("/auth/google", passport.authenticate("google")
-// , {
-//   scope: ["email", "profile"],
-// })
-);
-app.get("/auth/google/callback",  passport.authenticate("google", {
-  successReturnToOrRedirect: "/profile",
-  failureRedirect: "/login",
-  session: false,
-  // failureMessage: true,
-  // failWithError: true,
-}),
-(req, res) => {
-  // console.log(req.user);
-  // res.redirect("/profile");
-});
+app.use("/auth/google",googleAuth);
 
-//commit
+
+
 app.use((req, res) => {
   res.status(404).json({ error: "api not found" });
 });
