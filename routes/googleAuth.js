@@ -10,8 +10,8 @@ router.get(
 router.get(
   "/callback",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:5001/login",
     successRedirect: "http://localhost:5001/profile",
+    failureRedirect: "http://localhost:5001/login",
     session: false,
     failureMessage: true,
   }),

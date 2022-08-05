@@ -1,5 +1,4 @@
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
-const GoogleUser = require("../controllers/guser");
 const client = require("./db_config");
 
 module.exports = (passport) => {
@@ -15,13 +14,14 @@ module.exports = (passport) => {
         let sql = "select * from guser where profileId=?";
         client.query(sql, [profile.id], (err, rows) => {
           if (err) {
-            return done(err);
+            return done(err,false);
           }
           if (rows.length == 1) {
             return done(null, rows[0]);
-          } else {
+          } 
+          // else {
             console.log("Creating new user...");
-            // console.log(profile);
+
             const values = [
               [[profile.id, profile.given_name, profile.family_name]],
             ];
@@ -29,11 +29,11 @@ module.exports = (passport) => {
             sql = "INSERT INTO guser(profileId, firstname,lastname) VALUES ?";
             client.query(sql, values, (err, rows) => {
               if (err) {
-                return done(err);
+                return done(err,false);
               }
               return done(null, rows[0]);
             });
-          }
+          // }
         });
       }
     )
