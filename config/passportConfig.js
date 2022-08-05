@@ -7,10 +7,9 @@ module.exports = (passport) => {
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:5001/auth/google/callback",
+        callbackURL: "/auth/google/callback",
         scope: ["profile"],
         passReqToCallback: true,
-        // state: true
       },
       async (request, accessToken, refreshToken, profile, done) => {
         // console.log(request, accessToken, refreshToken, profile, done);
@@ -26,7 +25,7 @@ module.exports = (passport) => {
           sql = "INSERT INTO guser(profileId, firstname,lastname) VALUES ?";
           client.query(sql, values, (err, rows) => {
             if (err) return done(err);
-            return done(null, profile);
+            return done(null, { ...profile });
           });
         });
       }
