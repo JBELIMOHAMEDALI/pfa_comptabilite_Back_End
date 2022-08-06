@@ -87,7 +87,7 @@ exports.signin = (req, res) => {
                 {
                   userData: payload,
                 },
-                process.env.JWT_USER_KEY,
+                process.env.ACCESS_TOKEN,
                 { expiresIn: process.env.EXPIRES_IN }
               );
               return res.status(200).json({

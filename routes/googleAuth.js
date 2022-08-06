@@ -2,6 +2,7 @@ const express = require("express"); /// imort express
 const router = express.Router();
 const passport = require("passport");
 require("../config/passportConfig")(passport);
+const jwt = require('jsonwebtoken');
 
 router.get(
   "/",
@@ -16,14 +17,25 @@ router.get(
 router.get(
   "/callback",
   passport.authenticate("google", {
-    successRedirect: "http://localhost:4200/user/dashboard",
-    failureRedirect: "http://localhost:4200/signin",
+    // successRedirect: `http://localhost:4200/app/dashboard?response=${req.user.id}`,
+    failureRedirect: "/",
     session: false,
     failureMessage: true,
-    // failWithError: true,
+    failWithError: true,
   }),
   (req, res) => {
-    // res.redirect("/profile");
+    const token = jwt.sign(
+      {
+        user: req.user,
+      },
+      process.env.ACCESS_TOKEN,
+      { expiresIn: "7d" }
+    );
+    return res.status(200).json({
+      err: false,
+      message: "Auth successfull !",
+      token
+    });
   }
 );
 
