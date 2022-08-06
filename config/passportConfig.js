@@ -19,15 +19,20 @@ module.exports = (passport) => {
         client.query(sql, [profile.email], (err, rows) => {
           if (err) return done(err);
 
-          if (rows.length == 1 && rows[0].provider == profile.provider)//google user
+          if (rows.length == 1 && rows[0].provider == profile.provider)
+            //google user
             return done(null, rows[0]);
-          else if (rows.length == 0) {//google user doesnt exist
+          else if (rows.length == 0) {
+            //google user doesnt exist
             const values = [
               [
                 [
                   profile.id,
-                  profile.given_name,
-                  profile.family_name,
+                  profile.given_name.charAt(0).toUpperCase() +
+                    profile.given_name.slice(1),
+                  profile.family_name.charAt(0).toUpperCase() +
+                    profile.family_name.slice(1),
+
                   profile.email,
                   "1",
                   profile.provider,
@@ -40,8 +45,9 @@ module.exports = (passport) => {
               if (err) return done(err);
               return done(null, { ...profile });
             });
-          }else{//user exists without google's provide
-            return done(null,false)
+          } else {
+            //user exists without google's provide
+            return done(null, false);
           }
         });
       }
