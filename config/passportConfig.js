@@ -13,24 +13,36 @@ module.exports = (passport) => {
           "https://www.googleapis.com/auth/userinfo.email",
         ],
         passReqToCallback: true,
-
       },
       async (request, accessToken, refreshToken, profile, done) => {
-
-        let sql = "select * from user where profileId=? and provider =?";
-        client.query(sql, [profile.id,profile.provider], (err, rows) => {
+        let sql = "select * from user where email=?";
+        client.query(sql, [profile.email], (err, rows) => {
           if (err) return done(err);
 
-          if (rows.length == 1) return done(null, rows[0]);
-
-          const values = [
-            [[profile.id, profile.given_name, profile.family_name,profile.email,"1",profile.provider]],
-          ];
-          sql = "INSERT INTO user(profileId, firstname,lastname,email,actif,provider) VALUES ?";
-          client.query(sql, values, (err, rows) => {
-            if (err) return done(err);
-            return done(null, { ...profile });
-          });
+          if (rows.length == 1 && rows[0].provider == profile.provider)//google user
+            return done(null, rows[0]);
+          else if (rows.length == 0) {//google user doesnt exist
+            const values = [
+              [
+                [
+                  profile.id,
+                  profile.given_name,
+                  profile.family_name,
+                  profile.email,
+                  "1",
+                  profile.provider,
+                ],
+              ],
+            ];
+            sql =
+              "INSERT INTO user(profileId, firstname,lastname,email,actif,provider) VALUES ?";
+            client.query(sql, values, (err, rows) => {
+              if (err) return done(err);
+              return done(null, { ...profile });
+            });
+          }else{//user exists without google's provide
+            return done(null,false)
+          }
         });
       }
     )
