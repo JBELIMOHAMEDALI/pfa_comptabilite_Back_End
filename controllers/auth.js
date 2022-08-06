@@ -9,8 +9,8 @@ exports.validate = (req, res) => {
   const crypted_user = req.params.hasheduser;
   let sql = "";
   try {
-    sql = "select * from user where crypted = ? and actif = ?";
-    dbClient.query(sql, [crypted_user, "0"], (err, rows) => {
+    sql = "select * from user where crypted = ? and actif = ? and provider = ?";
+    dbClient.query(sql, [crypted_user, "0",'ATA'], (err, rows) => {
       if (err)
         return res.status(500).json({
           err: true,
@@ -49,9 +49,9 @@ exports.validate = (req, res) => {
 
 exports.signin = (req, res) => {
   const { email, password } = req.body;
-  let sql = ` SELECT DISTINCT user.* from user where USER.email=? AND USER.actif=? `;
+  let sql = ` SELECT DISTINCT user.* from user where USER.email=? AND USER.actif=?and provider=? `;
 
-  dbClient.query(sql, [email, "1"], (err, rows) => {
+  dbClient.query(sql, [email, "1",'ATA'], (err, rows) => {
     if (err) {
       return res.status(500).json({
         err: true,
@@ -119,16 +119,16 @@ exports.signin = (req, res) => {
 };
 
 exports.signup = (req, res) => {
-  const { email, password, firstname, lastname, birthdate } = req.body;
+  const { email, password, firstname, lastname } = req.body;
   let sql = "";
-  sql = "select * from user where email = ? ";
+  sql = "select * from user where email = ?";
   dbClient.query(sql, [email], (err, rows) => {
     if (!err) {
       if (rows.length > 0) {
         return res.status(409).json({
           //conflict
           err: true,
-          message: "This email address exists already ! ",
+          message: "An account has been already associated to this email ! ",
         });
       } else {
         bcrypt.hash(password, 10, (err, hashedPassword) => {
@@ -150,13 +150,12 @@ exports.signup = (req, res) => {
           mailer(mailPayload)
             .then((result) => {
               dbClient.query(
-                "INSERT INTO user(lastname,firstname,birthdate,email,password,crypted) VALUES ?",
+                "INSERT INTO user(lastname,firstname,email,password,crypted) VALUES ?",
                 [
                   [
                     [
                       lastname.charAt(0).toUpperCase() + lastname.slice(1),
                       firstname.charAt(0).toUpperCase() + firstname.slice(1),
-                      birthdate,
                       email,
                       hashedPassword,
                       encryptedMail,
@@ -199,14 +198,14 @@ exports.signup = (req, res) => {
 exports.verify_reset_email = (req, res,next) => {
   const { email } = req.body;
   let sql = "";
-  sql = "select * from user where email = ? ";
-  dbClient.query(sql, [email], (err, rows) => {
+  sql = "select * from user where email = ? AND actif =? AND provider=?";
+  dbClient.query(sql, [email,'1','ATA'], (err, rows) => {
     if (!err) {
       switch (rows.length) {
         case 0:
           return res.status(404).json({
             err: true,
-            message: "This email doesn't exist ! ",
+            message: "This email doesn't exist or maybe not actif ! Please verify ",
           });
         case 1:
           const resetCode = generateCode();
@@ -272,7 +271,7 @@ exports.verify_reset_email = (req, res,next) => {
 exports.verify_reset_code = (req, res) => {
   const { email,code } = req.body;
   let sql = "";
-  sql = "select reset_code from user where email = ? and actif =?";
+  sql = "select reset_code from user where email = ? and actif =? and provider =?";
   // dbClient.query(sql, [email], (err, rows) => {
     
   //   if (!err) {
@@ -300,7 +299,7 @@ exports.verify_reset_code = (req, res) => {
   //     });
   // });
 
-  dbClient.query(sql, [email,"1"], (err, rows) => {
+  dbClient.query(sql, [email,"1","ATA"], (err, rows) => {
     if (err) {
       return res.status(500).json({
         err: true,
@@ -354,8 +353,8 @@ exports.reset_password = (req, res) => {
     }
 
     const sql =
-      "UPDATE user SET password = ?,reset_code=?  WHERE email = ? ";
-    return query.sql_request(sql, [hashedPassword, null,  email], res);
+      "UPDATE user SET password = ?,reset_code=?  WHERE email = ? and actif = ? and provider = ?";
+    return query.sql_request(sql, [hashedPassword, null,  email,"1","ATA"], res);
   });
 };
 

@@ -5,7 +5,12 @@ require("../config/passportConfig")(passport);
 
 router.get(
   "/",
-  passport.authenticate("google", { scope: ["profile"] }),
+  passport.authenticate("google", {
+    scope: [
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/userinfo.email",
+    ],
+  })
   // (req, res) => res.json('access')
 );
 router.get(

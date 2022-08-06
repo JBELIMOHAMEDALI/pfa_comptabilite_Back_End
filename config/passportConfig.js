@@ -8,21 +8,25 @@ module.exports = (passport) => {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: "/auth/google/callback",
-        scope: ["profile"],
+        scope: [
+          "https://www.googleapis.com/auth/userinfo.profile",
+          "https://www.googleapis.com/auth/userinfo.email",
+        ],
         passReqToCallback: true,
+
       },
       async (request, accessToken, refreshToken, profile, done) => {
-        // console.log(request, accessToken, refreshToken, profile, done);
-        let sql = "select * from guser where profileId=?";
-        client.query(sql, [profile.id], (err, rows) => {
+
+        let sql = "select * from user where profileId=? and provider =?";
+        client.query(sql, [profile.id,profile.provider], (err, rows) => {
           if (err) return done(err);
 
           if (rows.length == 1) return done(null, rows[0]);
 
           const values = [
-            [[profile.id, profile.given_name, profile.family_name]],
+            [[profile.id, profile.given_name, profile.family_name,profile.email,"1",profile.provider]],
           ];
-          sql = "INSERT INTO guser(profileId, firstname,lastname) VALUES ?";
+          sql = "INSERT INTO user(profileId, firstname,lastname,email,actif,provider) VALUES ?";
           client.query(sql, values, (err, rows) => {
             if (err) return done(err);
             return done(null, { ...profile });
