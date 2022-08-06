@@ -83,7 +83,7 @@ exports.signin = (req, res) => {
                 nb_companies: nb_companies,
                 companies: nb_companies > 0 ? rows : [],
               };
-              const token = jwt.sign(
+              const accessToken = jwt.sign(
                 {
                   userData: payload,
                 },
@@ -93,7 +93,7 @@ exports.signin = (req, res) => {
               return res.status(200).json({
                 err: false,
                 message: "Auth successfull !",
-                token: token,
+                accessToken,
               });
             } else {
               return res.status(500).json({

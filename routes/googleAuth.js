@@ -18,13 +18,13 @@ router.get(
   "/callback",
   passport.authenticate("google", {
     // successRedirect: `http://localhost:4200/app/dashboard?response=${req.user.id}`,
-    failureRedirect: "/",
+    failureRedirect: "http://localhost:4200/signin",
     session: false,
     failureMessage: true,
     failWithError: true,
   }),
   (req, res) => {
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       {
         user: req.user,
       },
@@ -34,7 +34,7 @@ router.get(
     return res.status(200).json({
       err: false,
       message: "Auth successfull !",
-      token
+      accessToken
     });
   }
 );
