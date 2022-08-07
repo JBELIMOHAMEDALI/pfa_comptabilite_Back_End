@@ -6,7 +6,6 @@ router.get("/get",company.getall);
 router.post("/add",company.insert);
 router.put("/update",company.update);
 router.delete("/delete/:id",company.delete);
-//commet
 
 module.exports=router;
  

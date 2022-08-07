@@ -24,19 +24,16 @@ router.get(
     failWithError: true,
   }),
   (req, res) => {
+
     const accessToken = jwt.sign(
       {
         user: req.user,
       },
       process.env.ACCESS_TOKEN,
-      { expiresIn: "7d" }
+      { expiresIn: process.env.EXPIRES_IN }
     );
-    return res.status(200).json({
-      err: false,
-      message: "Auth successfull !",
-      accessToken
-    });
+    res.redirect(`http://localhost:4200/app/redirection/${accessToken}`)
   }
-);
+);//redirect empty LS and response !=null
 
 module.exports = router;

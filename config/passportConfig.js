@@ -15,14 +15,20 @@ module.exports = (passport) => {
         passReqToCallback: true,
       },
       async (request, accessToken, refreshToken, profile, done) => {
-        let sql = "select * from user where email=?";
-        client.query(sql, [profile.email], (err, rows) => {
+        let sql = `select user.*,COUNT(id_company) AS nb_companies from user 
+        join company ON company.id_user=user.id_user where profileId=?`;
+        client.query(sql, [profile.id], (err, rows) => {
           if (err) return done(err);
 
-          if (rows.length == 1 && rows[0].provider == profile.provider)
+          if (rows.length == 1) {
+            const { nb_companies } = rows[0];
+            if (nb_companies == 0) {
+              return done(null, { ...profile,nb_companies });
+            } else {
+              return done(null, rows[0]);
+            }
             //google user
-            return done(null, rows[0]);
-          else if (rows.length == 0) {
+          } else if (rows.length == 0) {
             //google user doesnt exist
             const values = [
               [
@@ -43,18 +49,18 @@ module.exports = (passport) => {
               "INSERT INTO user(profileId, firstname,lastname,email,actif,provider) VALUES ?";
             client.query(sql, values, (err, rows) => {
               if (err) return done(err);
-              return done(null, { ...profile });
+              return done(null, { ...profile,nb_companies:0 });
             });
-          } else {
-            //user exists without google's provide
-            return done(null, false);
           }
+          // else {
+          //user exists without google's provide
+          // return done(null, false);
+          // }
         });
       }
     )
   );
 };
-
 
 // const JwtStrategy = require("passport-jwt").Strategy;
 // const { ExtractJwt } = require("passport-jwt");

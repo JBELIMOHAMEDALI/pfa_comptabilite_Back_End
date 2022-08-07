@@ -12,6 +12,7 @@ const plan_comptable = require("./routes/plan_comptable");
 const tax = require("./routes/tax");
 const passport = require("passport");
 require("./config/passportConfig")(passport);
+const dashboard = require("./routes/dashboard");
 
 
 
@@ -38,6 +39,9 @@ db.connect((error) => {
   console.log("Connected to db ");
 });
 
+
+
+app.use("/dashboard", dashboard);
 app.use("/auth/user", auth);
 app.use("/company", company);
 app.use("/plan_comptable", plan_comptable);

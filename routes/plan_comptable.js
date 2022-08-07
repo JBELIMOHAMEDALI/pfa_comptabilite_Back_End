@@ -6,7 +6,6 @@ router.get("/get",plan_comptable.getall);
 router.post("/add",plan_comptable.insert);
 router.put("/update",plan_comptable.update);
 router.delete("/delete/:id",plan_comptable.delete);
-//commet
 
 
 module.exports=router;

@@ -10,7 +10,7 @@ exports.validate = (req, res) => {
   let sql = "";
   try {
     sql = "select * from user where crypted = ? and actif = ? and provider = ?";
-    dbClient.query(sql, [crypted_user, "0",'ATA'], (err, rows) => {
+    dbClient.query(sql, [crypted_user, "0", "ATA"], (err, rows) => {
       if (err)
         return res.status(500).json({
           err: true,
@@ -51,7 +51,7 @@ exports.signin = (req, res) => {
   const { email, password } = req.body;
   let sql = ` SELECT DISTINCT user.* from user where USER.email=? AND USER.actif=?and provider=? `;
 
-  dbClient.query(sql, [email, "1",'ATA'], (err, rows) => {
+  dbClient.query(sql, [email, "1", "ATA"], (err, rows) => {
     if (err) {
       return res.status(500).json({
         err: true,
@@ -67,21 +67,26 @@ exports.signin = (req, res) => {
           });
         }
         if (same) {
+          const user = rows[0]; //user without company test
           const { id_user, crypted } = rows[0];
           sql = `    
-                SELECT company.*, COUNT(id_company) as nb_companies
+                SELECT user.*, COUNT(id_company) as nb_companies
                 FROM COMPANY JOIN user 
                 ON company.id_user=user.id_user                  
                 where user.id_user=?
               `;
           dbClient.query(sql, [id_user], (err, rows) => {
             if (!err) {
-              const {nb_companies}=rows[0];
+              const { nb_companies } = rows[0];
               const payload = {
-                id_user,
-                crypted,
-                nb_companies: nb_companies,
-                companies: nb_companies > 0 ? rows : [],
+                user:
+                  nb_companies === 0
+                    ? { user, nb_companies }
+                    : { user: rows[0] },
+                // id_user,
+                // crypted,
+                // nb_companies,
+                // companies: nb_companies > 0 ? rows : [],
               };
               const accessToken = jwt.sign(
                 {
@@ -195,17 +200,18 @@ exports.signup = (req, res) => {
   });
 };
 
-exports.verify_reset_email = (req, res,next) => {
+exports.verify_reset_email = (req, res, next) => {
   const { email } = req.body;
   let sql = "";
   sql = "select * from user where email = ? AND actif =? AND provider=?";
-  dbClient.query(sql, [email,'1','ATA'], (err, rows) => {
+  dbClient.query(sql, [email, "1", "ATA"], (err, rows) => {
     if (!err) {
       switch (rows.length) {
         case 0:
           return res.status(404).json({
             err: true,
-            message: "This email doesn't exist or maybe not actif ! Please verify ",
+            message:
+              "This email doesn't exist or maybe not actif ! Please verify ",
           });
         case 1:
           const resetCode = generateCode();
@@ -223,7 +229,6 @@ exports.verify_reset_email = (req, res,next) => {
             };
             mailer(mailPayload)
               .then((result) => {
-
                 dbClient.query(
                   "UPDATE user SET reset_code=? where email=? ",
                   [hashedCode, email],
@@ -237,7 +242,8 @@ exports.verify_reset_email = (req, res,next) => {
 
                     return res.status(200).json({
                       err: false,
-                      message: "Verified ! An activation code has been sent to this email address ",
+                      message:
+                        "Verified ! An activation code has been sent to this email address ",
                     });
 
                     // req.userMail = {
@@ -269,11 +275,12 @@ exports.verify_reset_email = (req, res,next) => {
   });
 };
 exports.verify_reset_code = (req, res) => {
-  const { email,code } = req.body;
+  const { email, code } = req.body;
   let sql = "";
-  sql = "select reset_code from user where email = ? and actif =? and provider =?";
+  sql =
+    "select reset_code from user where email = ? and actif =? and provider =?";
   // dbClient.query(sql, [email], (err, rows) => {
-    
+
   //   if (!err) {
   //     switch (rows.length) {
   //       case 0:
@@ -299,7 +306,7 @@ exports.verify_reset_code = (req, res) => {
   //     });
   // });
 
-  dbClient.query(sql, [email,"1","ATA"], (err, rows) => {
+  dbClient.query(sql, [email, "1", "ATA"], (err, rows) => {
     if (err) {
       return res.status(500).json({
         err: true,
@@ -307,7 +314,6 @@ exports.verify_reset_code = (req, res) => {
       });
     }
     if (rows.length == 1) {
-
       bcrypt.compare(code, rows[0].reset_code, (err, same) => {
         if (err) {
           return res.status(500).json({
@@ -330,11 +336,11 @@ exports.verify_reset_code = (req, res) => {
     } else {
       return res.status(404).json({
         err: true,
-        message: "Reset failed ! Check your email address or your account activation",
+        message:
+          "Reset failed ! Check your email address or your account activation",
       });
     }
   });
-
 };
 
 function generateCode() {
@@ -346,7 +352,6 @@ exports.reset_password = (req, res) => {
   bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
     if (err) {
       return res.status(500).json({
-        
         err,
         message: "An error occured in server ! Retry later ",
       });
@@ -354,11 +359,14 @@ exports.reset_password = (req, res) => {
 
     const sql =
       "UPDATE user SET password = ?,reset_code=?  WHERE email = ? and actif = ? and provider = ?";
-    return query.sql_request(sql, [hashedPassword, null,  email,"1","ATA"], res);
+    return query.sql_request(
+      sql,
+      [hashedPassword, null, email, "1", "ATA"],
+      res
+    );
   });
 };
 
-
-//The Client ID is a public identifier of your application. 
-// The Client Secret is confidential and should only be used to 
+//The Client ID is a public identifier of your application.
+// The Client Secret is confidential and should only be used to
 // authenticate your application and make requests to LinkedIn's APIs

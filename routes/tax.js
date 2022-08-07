@@ -6,7 +6,6 @@ router.get("/get",taxe.getall);
 router.post("/add",taxe.insert);
 router.put("/update",taxe.update);
 router.delete("/delete/:id",taxe.delete);
-//commet
 
 
 module.exports=router;
