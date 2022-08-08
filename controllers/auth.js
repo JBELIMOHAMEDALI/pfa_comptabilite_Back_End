@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const mailer = require("../middleware/mailer");
 const encryption = require("../middleware/encryption");
 const query = require("../middleware/db_query");
+const encryptToken = require('../middleware/encryptToken');
 
 exports.validate = (req, res) => {
   const crypted_user = req.params.hasheduser;
@@ -95,10 +96,12 @@ exports.signin = (req, res) => {
                 process.env.ACCESS_TOKEN,
                 { expiresIn: process.env.EXPIRES_IN }
               );
+              const encryptedToken=encryptToken.encrypt(accessToken)
+
               return res.status(200).json({
                 err: false,
                 message: "Auth successfull !",
-                accessToken,
+                accessToken:encryptedToken
               });
             } else {
               return res.status(500).json({

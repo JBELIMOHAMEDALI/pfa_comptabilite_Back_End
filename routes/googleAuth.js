@@ -1,8 +1,15 @@
 const express = require("express"); /// imort express
 const router = express.Router();
 const passport = require("passport");
-require("../config/passportConfig")(passport);
+const passportConfig=require("../config/passportConfig");
 const jwt = require('jsonwebtoken');
+const encryptToken = require('../middleware/encryptToken');
+
+
+
+// passportConfig(passport,)//find userby id methods
+
+
 
 router.get(
   "/",
@@ -32,7 +39,8 @@ router.get(
       process.env.ACCESS_TOKEN,
       { expiresIn: process.env.EXPIRES_IN }
     );
-    res.redirect(`http://localhost:4200/app/redirection/${accessToken}`)
+    const tokenEncrypted=encryptToken.encrypt(accessToken)
+    res.redirect(`http://localhost:4200/app/redirection/${tokenEncrypted}`)
   }
 );//redirect empty LS and response !=null
 

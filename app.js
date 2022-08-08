@@ -10,26 +10,31 @@ const googleAuth = require("./routes/googleAuth");
 const company = require("./routes/company");
 const plan_comptable = require("./routes/plan_comptable");
 const tax = require("./routes/tax");
-const passport = require("passport");
-require("./config/passportConfig")(passport);
+const session = require("express-session");
+// require("./config/passportConfig")(passport);
 const dashboard = require("./routes/dashboard");
 
 
 
+app.use(session({
+  secret:process.env.SESSION_SECRET,
+  resave:false,
+  saveUninitialized:false
+}))
+
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
-    // origin:"*"
   })
   );
   
-// app.set('view-engine','ejs');
-// app.get('/login',(req,res)=>{
-//   res.render('login.ejs')
-// })
-// app.get('/profile',(req,res)=>{
-//   res.render('profile.ejs')
-// })
+app.set('view-engine','ejs');
+app.get('/login',(req,res)=>{
+  res.render('login.ejs')
+})
+app.get('/profile',(req,res)=>{
+  res.render('profile.ejs')
+})
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -54,3 +59,4 @@ app.use((req, res) => {
   res.status(404).json({ error: "api not found" });
 });
 module.exports = app;
+//require('crypto').randomBytes(48, function(err, buffer) { var token = buffer.toString('hex'); console.log(token)});

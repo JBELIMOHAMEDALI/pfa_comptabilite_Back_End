@@ -1,7 +1,7 @@
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 const client = require("./db_config");
 
-module.exports = (passport) => {
+module.exports = (passport, getUserById) => {
   passport.use(
     new GoogleStrategy(
       {
@@ -23,7 +23,7 @@ module.exports = (passport) => {
           if (rows.length == 1) {
             const { nb_companies } = rows[0];
             if (nb_companies == 0) {
-              return done(null, { ...profile,nb_companies });
+              return done(null, { ...profile, nb_companies });
             } else {
               return done(null, rows[0]);
             }
@@ -49,7 +49,7 @@ module.exports = (passport) => {
               "INSERT INTO user(profileId, firstname,lastname,email,actif,provider) VALUES ?";
             client.query(sql, values, (err, rows) => {
               if (err) return done(err);
-              return done(null, { ...profile,nb_companies:0 });
+              return done(null, { ...profile, nb_companies: 0 });
             });
           }
           // else {
@@ -60,8 +60,13 @@ module.exports = (passport) => {
       }
     )
   );
+  passport.serializeUser((user, done) => done(null, user.id));
+  passport.deserializeUser((uid, done) => done(null, getUserById(uid)));
 };
 
+//done first parameter is the err
+//done 2nd parameter is the user we found(true or false)
+//we can add 3rd parameter for a message tha will be diplayed
 // const JwtStrategy = require("passport-jwt").Strategy;
 // const { ExtractJwt } = require("passport-jwt");
 // module.exports = (passport) => {
