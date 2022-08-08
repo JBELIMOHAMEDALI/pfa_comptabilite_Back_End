@@ -20,42 +20,45 @@ module.exports = (passport, getUserById) => {
         client.query(sql, [profile.id], (err, rows) => {
           if (err) return done(err);
 
-          if (rows.length == 1) {
-            const { nb_companies } = rows[0];
-            if (nb_companies == 0) {
-              return done(null, { ...profile, nb_companies });
-            } else {
-              return done(null, rows[0]);
-            }
-            //google user
-          } else if (rows.length == 0) {
-            //google user doesnt exist
-            const values = [
-              [
-                [
-                  profile.id,
-                  profile.given_name.charAt(0).toUpperCase() +
-                    profile.given_name.slice(1),
-                  profile.family_name.charAt(0).toUpperCase() +
-                    profile.family_name.slice(1),
+          if(rows[0]&&rows[0].provider==='google'){
 
-                  profile.email,
-                  "1",
-                  profile.provider,
+            if (rows.length == 1) {
+              const { nb_companies } = rows[0];
+              if (nb_companies == 0) {
+                return done(null, { ...profile, nb_companies });
+              } else {
+                return done(null, rows[0]);
+              }
+              //google user
+            } else if (rows.length == 0) {
+              //google user doesnt exist
+              const values = [
+                [
+                  [
+                    profile.id,
+                    profile.given_name.charAt(0).toUpperCase() +
+                      profile.given_name.slice(1),
+                    profile.family_name.charAt(0).toUpperCase() +
+                      profile.family_name.slice(1),
+  
+                    profile.email,
+                    "1",
+                    profile.provider,
+                  ],
                 ],
-              ],
-            ];
-            sql =
-              "INSERT INTO user(profileId, firstname,lastname,email,actif,provider) VALUES ?";
-            client.query(sql, values, (err, rows) => {
-              if (err) return done(err);
-              return done(null, { ...profile, nb_companies: 0 });
-            });
+              ];
+              sql =
+                "INSERT INTO user(profileId, firstname,lastname,email,actif,provider) VALUES ?";
+              client.query(sql, values, (err, rows) => {
+                if (err) return done(err);
+                return done(null, { ...profile, nb_companies: 0 });
+              });
+            }
           }
-          // else {
-          //user exists without google's provide
-          // return done(null, false);
-          // }
+          else {
+          // user exists without google's provide
+          return done(null, false);
+          }
         });
       }
     )
