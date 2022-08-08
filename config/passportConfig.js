@@ -15,23 +15,25 @@ module.exports = (passport, getUserById) => {
         passReqToCallback: true,
       },
       async (request, accessToken, refreshToken, profile, done) => {
-        let sql = `select user.*,COUNT(id_company) AS nb_companies from user 
-        join company ON company.id_user=user.id_user where profileId=?`;
-        client.query(sql, [profile.id], (err, rows) => {
+        let sql = `select user.* from user where email=?`;
+        client.query(sql, [profile.email], (err, rows) => {
           if (err) return done(err);
-
-          if(rows[0]&&rows[0].provider==='google'){
-
             if (rows.length == 1) {
-              const { nb_companies } = rows[0];
-              if (nb_companies == 0) {
-                return done(null, { ...profile, nb_companies });
-              } else {
+              if(rows[0].provider==='google'){
+
                 return done(null, rows[0]);
+              }else{
+                return done(null,false);
+
               }
-              //google user
-            } else if (rows.length == 0) {
-              //google user doesnt exist
+              // if()
+              // const { nb_companies } = rows[0];
+              // if (nb_companies == 0) {
+              //   return done(null, { ...profile, nb_companies });
+              // } else {
+              }
+             else {
+              //create google user 
               const values = [
                 [
                   [
@@ -50,15 +52,11 @@ module.exports = (passport, getUserById) => {
               sql =
                 "INSERT INTO user(profileId, firstname,lastname,email,actif,provider) VALUES ?";
               client.query(sql, values, (err, rows) => {
-                if (err) return done(err);
+                if (err) return done(err,null);
                 return done(null, { ...profile, nb_companies: 0 });
               });
             }
-          }
-          else {
-          // user exists without google's provide
-          return done(null, false);
-          }
+         
         });
       }
     )
