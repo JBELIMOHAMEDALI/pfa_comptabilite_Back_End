@@ -1,7 +1,7 @@
 const express = require("express"); /// imort express
 const router = express.Router();
 const passport = require("passport");
-const passportConfig=require("../config/passportConfig");
+const passportConfig=require("../config/passportConfig")(passport);
 const jwt = require('jsonwebtoken');
 const encryptToken = require('../middleware/encryptToken');
 
