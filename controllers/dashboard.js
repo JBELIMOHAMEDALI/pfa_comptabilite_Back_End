@@ -1,4 +1,4 @@
-const queryy =require("../middleware/db_query");
+const queryy =require("../functions/db_query");
 
 
 

@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken')
-const encryptToken = require('../middleware/encryptToken');
+const {decryptToken} = require('../functions/encryption');
 module.exports=(req,res,next)=>{
     try {
         const token = req.headers['authorization'].split(" ")[1]; 
-        const decryptedToken=encryptToken.decrypt(token);
+        const decryptedToken=decryptToken(token);
         const decoded=jwt.verify(decryptedToken,process.env.ACCESS_TOKEN);
         req.userData=decoded;
         next();

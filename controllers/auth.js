@@ -1,10 +1,9 @@
 const bcrypt = require("bcrypt");
 const dbClient = require("../config/db_config");
 const jwt = require("jsonwebtoken");
-const mailer = require("../middleware/mailer");
-const encryption = require("../middleware/encryption");
-const query = require("../middleware/db_query");
-const encryptToken = require('../middleware/encryptToken');
+const mailer = require("../functions/mailer");
+const {decrpytData,encryptData,encryptToken} = require("../functions/encryption");
+const query = require("../functions/db_query");
 
 exports.validate = (req, res) => {
   const crypted_user = req.params.hasheduser;
@@ -27,9 +26,9 @@ exports.validate = (req, res) => {
             "1",
             crypted_user +
               "." +
-              encryption.encryptData(lastname) +
+              encryptData(lastname) +
               "." +
-              encryption.encryptData(firstname),
+              encryptData(firstname),
             crypted_user,
           ],
           res
@@ -146,7 +145,7 @@ exports.signup = (req, res) => {
               message: "error in hashing password ! Retry later",
             });
           }
-          const encryptedMail = encryption.encryptData(email);
+          const encryptedMail = encryptData(email);
           const mailPayload = {
             receivers: email,
             subject: "ACOUNT VERIFICATION",
@@ -368,6 +367,10 @@ exports.reset_password = (req, res) => {
       res
     );
   });
+};
+
+exports.logout = (req, res) => {
+  
 };
 
 //The Client ID is a public identifier of your application.
