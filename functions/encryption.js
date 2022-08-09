@@ -2,7 +2,6 @@ const crypto = require("crypto");
 const algorithm = "aes-256-cbc";
 const initVector = crypto.randomBytes(16);
 const Securitykey = crypto.randomBytes(32);
-const { encrypt, decrypt } = require("jwt-transform");
 
 
 
@@ -26,9 +25,3 @@ module.exports.decrpytData = function decrpytData(encryptedData) {
 };
 
 
-module.exports.encryptToken = (accessToken) => {
-  return encrypt(accessToken, 10);
-};
-module.exports.decryptToken = (tokenTodecrypt) => {
-  return decrypt(tokenTodecrypt, 10);
-};

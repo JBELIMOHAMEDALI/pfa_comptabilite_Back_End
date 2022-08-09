@@ -11,7 +11,6 @@ const flash = require("express-flash");
 const company = require("./routes/company");
 const plan_comptable = require("./routes/plan_comptable");
 const tax = require("./routes/tax");
-const session = require("express-session");
 const dashboard = require("./routes/dashboard");
 const userInfo = require("./routes/userinfo");
 
@@ -19,18 +18,18 @@ const passport = require("passport");
 const {initGooglePassportConfig,initLocalPassportConfig}=require("./config/passportConfig");
 
 
-app.use(flash());
+// app.use(flash());
 
-app.use(session({
-  secret:process.env.SESSION_SECRET,
-  resave:false,
-  saveUninitialized:false,
-  cookie: {  }
+// app.use(session({
+//   secret:process.env.SESSION_SECRET,
+//   resave:false,
+//   saveUninitialized:false,
+//   cookie: {  }
 
-}));
+// }));
 
-app.use(passport.initialize());
-app.use(passport.session())
+// app.use(passport.initialize());
+// app.use(passport.session())
 
 initGooglePassportConfig(passport)
 initLocalPassportConfig(passport)
@@ -42,13 +41,6 @@ app.use(
   })
   );
   
-// app.set('view-engine','ejs');
-// app.get('/login',(req,res)=>{
-//   res.render('login.ejs')
-// })
-// app.get('/profile',(req,res)=>{
-//   res.render('profile.ejs')
-// })
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -67,7 +59,6 @@ app.use("/plan_comptable", plan_comptable);
 app.use("/tax", tax);
 app.use("/user", userInfo);
 
-// app.use("/auth/google",googleAuth);
 
 
 

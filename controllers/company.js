@@ -1,10 +1,10 @@
-const queryy = require("../functions/db_query");
+const query = require("../functions/db_query");
 
 exports.getUserCompanies = (req, res) => {
     const {id_user}=req.decoded.user;
   const sql =
     "select company.* from company join user on user.id_user=company.id_user where user.id_user=?";
-  queryy.sql_request(sql, [id_user], res);
+  query.sql_request(sql, [id_user], res);
 };
 
 
@@ -16,7 +16,7 @@ exports.insert = (req, res) => {
   //
   const sql = "INSERT INTO company(name, domain,id_user) VALUES ?";
 
-  queryy.sql_request(sql, values, res);
+  query.sql_request(sql, values, res);
 };
 //
 exports.update = (req, res) => {
@@ -26,7 +26,7 @@ exports.update = (req, res) => {
   const values = [name, domain, id_company,id_user];
   const sql =
     "UPDATE company SET name = ?, domain = ? WHERE id_company = ? and id_user =?";
-  queryy.sql_request(sql, values, res);
+  query.sql_request(sql, values, res);
 };
 
 exports.delete = (req, res) => {
@@ -34,5 +34,5 @@ exports.delete = (req, res) => {
 
   const values = [req.params.id,id_user];
   const sql = "delete from company where id_company = ? and id_user=?";
-  queryy.sql_request(sql, values, res);
+  query.sql_request(sql, values, res);
 };

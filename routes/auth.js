@@ -2,8 +2,6 @@ const express = require("express"); /// imort express
 const router = express.Router();
 const auth = require("../controllers/auth");
 const passport = require("passport");
-const { encryptToken } = require("../functions/encryption");
-const { checkLoginAndRegister } = require("../middleware/checkSession");
 const jwt = require("jsonwebtoken");
 
 router.post(
@@ -13,13 +11,15 @@ router.post(
   }),
   (req, res) => {
     const { uid, status } = req.user;
-    if (uid === -1) {
-      req.session.destroy();
-    } else {
-      const hour = 3600000;
-      req.session.cookie.expires = new Date(Date.now() + hour);
-      req.session.cookie.maxAge = hour;
-    }
+    // if (uid === -1) {
+    //   req.session.destroy();
+    // } else {
+    //   const hour = 3600000;
+    //   req.session.cookie.expires = new Date(Date.now() + hour);
+    //   req.session.cookie.maxAge = hour;
+    // }
+    // req.session.save()
+    // console.log(req.cookies);
     return res.status(status).json(req.user);
   }
 );

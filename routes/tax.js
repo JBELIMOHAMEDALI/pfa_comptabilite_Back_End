@@ -1,11 +1,12 @@
 const express = require("express"); /// imort express
 const router = express.Router();
-const taxe=require("../controllers/tax")
+const tax=require("../controllers/tax")
+const checkToken = require('../middleware/checkToken');
 
-router.get("/get",taxe.getall);
-router.post("/add",taxe.insert);
-router.put("/update",taxe.update);
-router.delete("/delete/:id",taxe.delete);
+router.get("/get",checkToken,tax.getall);
+router.post("/add",checkToken,tax.insert);
+router.put("/update",checkToken,tax.update);
+router.delete("/delete/:id",checkToken,tax.delete);
 
 
 module.exports=router;

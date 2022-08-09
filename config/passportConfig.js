@@ -63,15 +63,15 @@ module.exports.initGooglePassportConfig = (passport) => {
       }
     )
   );
-  passport.serializeUser((user, done) => done(null, user.id_user));
-  passport.deserializeUser((id_user, done) => {
-    const sql = `select id_user from user where user.id_user=?`;
-    client.query(sql, [id_user], (err, rows) => {
-      if (err) return done(err, false);
-      done(null, rows[0].id_user);
-    });
-    // done(null, getUserById(user.id_user));
-  });
+  // passport.serializeUser((user, done) => done(null, user.id_user));
+  // passport.deserializeUser((id_user, done) => {
+  //   const sql = `select id_user from user where user.id_user=?`;
+  //   client.query(sql, [id_user], (err, rows) => {
+  //     if (err) return done(err, false);
+  //     done(null, rows[0].id_user);
+  //   });
+  //   // done(null, getUserById(user.id_user));
+  // });
 };
 
 module.exports.initLocalPassportConfig = (passport) => {
@@ -165,15 +165,15 @@ module.exports.initLocalPassportConfig = (passport) => {
       authenticateUser
     )
   );
-  passport.serializeUser((user, done) => done(null, user.uid));
-  passport.deserializeUser((user, done) => {
-    // done(null, getUserById(render.uid));
-    const sql = `select * from user where user.id_user=?`;
-    client.query(sql, [user.id_user], (err, rows) => {
-      if (err) return done(err, false);
-      done(null, rows[0].id_user);
-    });
-  });
+  // passport.serializeUser((user, done) => done(null, user.uid));
+  // passport.deserializeUser((user, done) => {
+  //   // done(null, getUserById(render.uid));
+  //   const sql = `select * from user where user.id_user=?`;
+  //   client.query(sql, [user.id_user], (err, rows) => {
+  //     if (err) return done(err, false);
+  //     done(null, rows[0].id_user);
+  //   });
+  // });
 };
 
 //done first parameter is the err
