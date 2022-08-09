@@ -13,10 +13,10 @@ const plan_comptable = require("./routes/plan_comptable");
 const tax = require("./routes/tax");
 const session = require("express-session");
 const dashboard = require("./routes/dashboard");
+const userInfo = require("./routes/userinfo");
 
 const passport = require("passport");
 const {initGooglePassportConfig,initLocalPassportConfig}=require("./config/passportConfig");
-const {findLocalUserByemail,findUserByid} = require('./functions/findUser');
 
 
 app.use(flash());
@@ -24,7 +24,9 @@ app.use(flash());
 app.use(session({
   secret:process.env.SESSION_SECRET,
   resave:false,
-  saveUninitialized:false
+  saveUninitialized:false,
+  cookie: {  }
+
 }));
 
 app.use(passport.initialize());
@@ -63,6 +65,8 @@ app.use("/auth/user", auth);
 app.use("/company", company);
 app.use("/plan_comptable", plan_comptable);
 app.use("/tax", tax);
+app.use("/user", userInfo);
+
 // app.use("/auth/google",googleAuth);
 
 

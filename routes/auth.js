@@ -13,7 +13,13 @@ router.post(
   }),
   (req, res) => {
     const { uid, status } = req.user;
-    if (uid === -1) req.session.destroy();
+    if (uid === -1) {
+      req.session.destroy();
+    } else {
+      const hour = 3600000;
+      req.session.cookie.expires = new Date(Date.now() + hour);
+      req.session.cookie.maxAge = hour;
+    }
     return res.status(status).json(req.user);
   }
 );
@@ -46,17 +52,15 @@ router.get(
       {
         user: req.user,
       },
-      process.env.ACCESS_TOKEN,
+      process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: process.env.EXPIRES_IN }
     );
-    const tokenEncrypted = encryptToken(accessToken);
+    // const tokenEncrypted = encryptToken(accessToken);
     res.redirect(
-      `${process.env.CORS_ORIGIN}/app/redirection/${tokenEncrypted}`
+      `${process.env.CORS_ORIGIN}/app/redirection/${accessToken}`
     );
   }
 ); //redirect empty LS and response !=null
-
-
 
 router.post("/logout", auth.logout);
 

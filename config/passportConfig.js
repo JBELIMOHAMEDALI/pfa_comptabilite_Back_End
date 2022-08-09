@@ -19,12 +19,12 @@ module.exports.initGooglePassportConfig = (passport) => {
         // passReqToCallback: true,
       },
       async (request, accessToken, refreshToken, profile, done) => {
-        let sql = `select user.* from user where email=?`;
+        let sql = `select user.id_user,user.photo,user.profileId,user.firstname,user.lastname,user.email,user.provider
+         from user where email=?`;
         client.query(sql, [profile.email], (err, rows) => {
           if (err) return done(err);
           if (rows.length == 1) {
             if (rows[0].provider === "google") {
-              // console.log(rows[0]);
               return done(null, rows[0]);
             } else {
               return done(null, false);
@@ -35,11 +35,13 @@ module.exports.initGooglePassportConfig = (passport) => {
               [
                 [
                   profile.id,
-                  profile.given_name.charAt(0).toUpperCase() +
-                    profile.given_name.slice(1),
                   profile.family_name.charAt(0).toUpperCase() +
                     profile.family_name.slice(1),
-
+                  profile.given_name.charAt(0).toUpperCase() +
+                    profile.given_name.slice(1),
+                  `https://ui-avatars.com/api/?name=${profile.given_name
+                    .charAt(0)
+                    .toUpperCase()}`,
                   profile.email,
                   "1",
                   profile.provider,
@@ -47,10 +49,14 @@ module.exports.initGooglePassportConfig = (passport) => {
               ],
             ];
             sql =
-              "INSERT INTO user(profileId, firstname,lastname,email,actif,provider) VALUES ?";
+              "INSERT INTO user(profileId, lastname,firstname,photo,email,actif,provider) VALUES ?";
             client.query(sql, values, (err, rows) => {
               if (err) return done(err, null);
-              return done(null, { ...profile, nb_companies: 0,id_user:rows.insertId });
+              return done(null, {
+                ...profile,
+                nb_companies: 0,
+                id_user: rows.insertId,
+              });
             });
           }
         });
@@ -58,9 +64,9 @@ module.exports.initGooglePassportConfig = (passport) => {
     )
   );
   passport.serializeUser((user, done) => done(null, user.id_user));
-  passport.deserializeUser((user, done) => {
-    const sql = `select * from user where user.id_user=?`;
-    client.query(sql, [user.id_user], (err, rows) => {
+  passport.deserializeUser((id_user, done) => {
+    const sql = `select id_user from user where user.id_user=?`;
+    client.query(sql, [id_user], (err, rows) => {
       if (err) return done(err, false);
       done(null, rows[0].id_user);
     });
@@ -70,7 +76,7 @@ module.exports.initGooglePassportConfig = (passport) => {
 
 module.exports.initLocalPassportConfig = (passport) => {
   const authenticateUser = (email, password, done) => {
-    let sql = ` SELECT DISTINCT user.* from user where USER.email=? AND USER.actif=?and provider=? `;
+    let sql = ` SELECT user.id_user,user.password from user where USER.email=? AND USER.actif=?and provider=? `;
 
     client.query(sql, [email, "1", "ATA"], (err, rows) => {
       if (err) {
@@ -84,9 +90,9 @@ module.exports.initLocalPassportConfig = (passport) => {
       if (rows.length == 1) {
         bcrypt.compare(password, rows[0].password, (err, same) => {
           if (same) {
-            const { id_user, crypted } = rows[0];
+            const { id_user } = rows[0];
             sql = `    
-                  SELECT user.*, COUNT(id_company) as nb_companies
+                  SELECT user.id_user,user.lastname,user.firstname,user.email,user.photo,COUNT(id_company) as nb_companies
                   FROM COMPANY JOIN user 
                   ON company.id_user=user.id_user                  
                   where user.id_user=?
@@ -109,23 +115,22 @@ module.exports.initLocalPassportConfig = (passport) => {
                 }); //(server error,userfound or not,message)
               }
               const { nb_companies } = user;
-              const payload = {
-                user: { ...user, nb_companies },
-              };
               const accessToken = jwt.sign(
                 {
-                  userData: payload,
+                  user: {
+                    ...user,
+                    nb_companies,
+                  },
                 },
-                process.env.ACCESS_TOKEN,
+                process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: process.env.EXPIRES_IN }
               );
-              const encryptedToken = encryptToken(accessToken);
 
               const render = {
                 status: 200,
                 err: false,
                 message: "Auth successfull !",
-                accessToken: encryptedToken,
+                accessToken,
                 uid: user.id_user,
               };
               return done(null, render);

@@ -1,7 +1,7 @@
 const queryy =require("../functions/db_query");
 
 exports.getall=(req,res)=>{
-    const sql="select * from taxe";
+    const sql="select * from tax";
     queryy.sql_request(sql,null,res);
  
 }

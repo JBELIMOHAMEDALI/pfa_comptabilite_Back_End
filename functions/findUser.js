@@ -7,7 +7,6 @@ module.exports.findUserByid = (id) => {
   const sql = `select * from user where user.id_user=?`;
   dbClient.query(sql, [id], (err, rows) => {
     if (err) return null;
-    console.log(rows[0].id_user,'fel find userby ID');
     return rows[0].id_user;
   });
 };
@@ -43,7 +42,6 @@ module.exports.findLocalUserByemail = (email, password) => {
                 where user.id_user=?
               `;
           dbClient.query(sql, [id_user], (err, rows) => {
-            console.log(rows[0]);
 
             // if (!err) {
                 return rows[0]
@@ -58,7 +56,7 @@ module.exports.findLocalUserByemail = (email, password) => {
             //     {
             //       userData: payload,
             //     },
-            //     process.env.ACCESS_TOKEN,
+            //     process.env.ACCESS_TOKEN_SECRET,
             //     { expiresIn: process.env.EXPIRES_IN }
             //   );
             //   const encryptedToken = encryptToken.encrypt(accessToken);
