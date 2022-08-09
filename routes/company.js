@@ -4,9 +4,9 @@ const company=require("../controllers/company");
 const checkToken = require('../middleware/checkToken');
 
 router.get("/get",checkToken,company.getUserCompanies);
-router.post("/add",company.insert);
-router.put("/update",company.update);
-router.delete("/delete/:id",company.delete);
+router.post("/add",checkToken,company.insert);
+router.put("/update",checkToken,company.update);
+router.delete("/delete/:id",checkToken,company.delete);
 
 module.exports=router;
  

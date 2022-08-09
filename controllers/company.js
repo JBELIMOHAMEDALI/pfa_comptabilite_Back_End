@@ -9,25 +9,27 @@ exports.getUserCompanies = (req, res) => {
 
 
 exports.insert = (req, res) => {
-  const { nom_societe, domaine_societe } = req.body;
-  const values = [[[nom_societe, domaine_societe]]];
+  const {id_user}=req.decoded.user;
+
+  const { name, domain } = req.body;
+  const values = [[[name, domain,id_user]]];
   //
-  const sql = "INSERT INTO societe(nom_societe, domaine_societe) VALUES ?";
+  const sql = "INSERT INTO company(name, domain,id_user) VALUES ?";
 
   queryy.sql_request(sql, values, res);
 };
 //
 exports.update = (req, res) => {
-  const { nom_societe, domaine_societe, id_societe } = req.body;
+  const { name, domain, id_company } = req.body;
 
-  const values = [nom_societe, domaine_societe, id_societe];
+  const values = [name, domain, id_company];
   const sql =
-    "UPDATE societe SET nom_societe = ?, domaine_societe = ? WHERE id_societe = ?";
+    "UPDATE domain SET name = ?, domain = ? WHERE id_company = ?";
   queryy.sql_request(sql, values, res);
 };
 
 exports.delete = (req, res) => {
   const values = [req.params.id];
-  const sql = "delete from societe where id_societe = ?";
+  const sql = "delete from company where id_company = ?";
   queryy.sql_request(sql, values, res);
 };
