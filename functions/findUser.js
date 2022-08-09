@@ -7,7 +7,8 @@ module.exports.findUserByid = (id) => {
   const sql = `select * from user where user.id_user=?`;
   dbClient.query(sql, [id], (err, rows) => {
     if (err) return null;
-    return rows[0];
+    console.log(rows[0].id_user,'fel find userby ID');
+    return rows[0].id_user;
   });
 };
 

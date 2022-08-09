@@ -38,13 +38,13 @@ app.use(
   })
   );
   
-app.set('view-engine','ejs');
-app.get('/login',(req,res)=>{
-  res.render('login.ejs')
-})
-app.get('/profile',(req,res)=>{
-  res.render('profile.ejs')
-})
+// app.set('view-engine','ejs');
+// app.get('/login',(req,res)=>{
+//   res.render('login.ejs')
+// })
+// app.get('/profile',(req,res)=>{
+//   res.render('profile.ejs')
+// })
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

@@ -19,7 +19,7 @@
 //   "/callback",
 //   passport.authenticate("google", {
 //     // successRedirect: `http://localhost:4200/app/dashboard?response=${req.user.id}`,
-//     failureRedirect: `http://${process.env.CORS_ORIGIN}/signin`,
+//     failureRedirect: `${process.env.CORS_ORIGIN}/signin`,
 //     // session: false,
 //     // failureMessage: true,
 //     // failWithError: true,
@@ -34,7 +34,7 @@
 //       { expiresIn: process.env.EXPIRES_IN }
 //     );
 //     const tokenEncrypted=encryptToken.encrypt(accessToken)
-//     res.redirect(`http://${process.env.CORS_ORIGIN}/app/redirection/${tokenEncrypted}`)
+//     res.redirect(`${process.env.CORS_ORIGIN}/app/redirection/${tokenEncrypted}`)
 //   }
 // );//redirect empty LS and response !=null
 

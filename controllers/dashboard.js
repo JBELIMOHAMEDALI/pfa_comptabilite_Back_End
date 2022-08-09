@@ -3,7 +3,7 @@ const queryy =require("../functions/db_query");
 
 
 exports.get=(req,res)=>{
-    // const sql="select * from societe";
+    console.log('api called');
     return res.json({
         stats:true
     })

@@ -28,7 +28,6 @@ exports.insert=(req,res)=>{
     const sql="insert into plan_comptable (nom_du_fichier,type_de_donnees, intitule, numero_compte, type_de_fichier, delimiteur_enregistrement, delimiteur_champ,  origine_fichier,nombre_de_decimales, separateur_decimales, cadrage,separateur_miliers,caractere_remplissage, debut_enregistrement, entete_du_fichier,id_societe ) values ?";
     
     queryy.sql_request(sql,values,res);
-    console.log("add");
 }
 
 exports.update=(req,res)=>{
@@ -56,7 +55,6 @@ exports.update=(req,res)=>{
 
 exports.delete=(req,res)=>{
     const values=[req.params.id];
-    console.log(values)
     const sql="delete from plan_comptable where id_comptable = ?";
     queryy.sql_request(sql,values,res);
 }

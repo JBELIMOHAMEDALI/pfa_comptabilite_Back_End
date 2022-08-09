@@ -1,13 +1,17 @@
 module.exports.checkAuthenticated = (req, res, next) => {
+  // console.log(req.isAuthenticated());
   if (req.isAuthenticated()) {
     return next();
   }
-  return res.redirect(`http://${process.env.CORS_ORIGIN}/signin`);
+  // req.authUser=false;
+  // next()
+  // return res.redirect(`${process.env.CORS_ORIGIN}/signin`);
 };
 
 module.exports.checkLoginAndRegister = (req, res, next) => {
   if (req.isAuthenticated()) {
-    return res.redirect(`http://${process.env.CORS_ORIGIN}/app/dashboard`);
+    req.authUser=true
+    return res.redirect(`${process.env.CORS_ORIGIN}/app/dashboard`);
   }
   return next();
 };

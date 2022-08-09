@@ -15,7 +15,7 @@ module.exports.initGooglePassportConfig = (passport, getUserById) => {
           "https://www.googleapis.com/auth/userinfo.profile",
           "https://www.googleapis.com/auth/userinfo.email",
         ],
-        passReqToCallback: true,
+        // passReqToCallback: true,
       },
       async (request, accessToken, refreshToken, profile, done) => {
         let sql = `select user.* from user where email=?`;
@@ -60,7 +60,7 @@ module.exports.initGooglePassportConfig = (passport, getUserById) => {
       }
     )
   );
-  passport.serializeUser((user, done) => done(null, user.id));
+  passport.serializeUser((user, done) => done(null, user.id_user));
   passport.deserializeUser((uid, done) => done(null, getUserById(uid)));
 };
 
@@ -91,6 +91,7 @@ module.exports.initLocalPassportConfig = (
       err: false,
       message: "Auth successfull !",
       accessToken: encryptedToken,
+      uid:user.id_user
     };
     return done(null, render);
   };
@@ -102,7 +103,7 @@ module.exports.initLocalPassportConfig = (
     )
   );
   passport.serializeUser((user, done) => done(null, user.id));
-  passport.deserializeUser((uid, done) => done(null, getUserById(uid)));
+  passport.deserializeUser((render, done) =>{console.log(render); done(null, getUserById(render.uid))});
 };
 
 //done first parameter is the err

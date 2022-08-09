@@ -19,7 +19,6 @@ exports.insert=(req,res)=>{
     const sql="insert into taxe (code_taxe,intitule, compte_taxe, type_de_taxe, sens, taux_pourcentage, numero) values ?";
     
     queryy.sql_request(sql,values,res);
-    console.log("add");
 }
 
 exports.update=(req,res)=>{
@@ -40,7 +39,6 @@ exports.update=(req,res)=>{
 
 exports.delete=(req,res)=>{
     const values=[req.params.id];
-    console.log(values)
     const sql="delete from taxe where id_taxe = ?";
     queryy.sql_request(sql,values,res);
 }

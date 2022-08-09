@@ -4,15 +4,15 @@ const auth = require("../controllers/auth");
 const passport = require("passport");
 const { encryptToken } = require("../functions/encryption");
 const {
-  checkAuthenticated,
   checkLoginAndRegister,
 } = require("../middleware/checkSession");
+const jwt = require('jsonwebtoken');
 
 router.post(
   "/signin",
   passport.authenticate("local", {
     // successRedirect:`http://${process.env.CORS_ORIGIN}/app/redirection/${tokenEncrypted}`,
-    failureRedirect: `http://${process.env.CORS_ORIGIN}/signin`,
+    failureRedirect: `${process.env.CORS_ORIGIN}/signin`,
     failureFlash: true,
   }),
   (req, res) => {
@@ -25,7 +25,7 @@ router.post(
     );
     const tokenEncrypted = encryptToken.encrypt(accessToken);
     res.redirect(
-      `http://${process.env.CORS_ORIGIN}/app/redirection/${tokenEncrypted}`
+      `${process.env.CORS_ORIGIN}/app/redirection/${tokenEncrypted}`
     );
   }
 );
@@ -51,7 +51,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", {
     // successRedirect: `http://localhost:4200/app/dashboard?response=${req.user.id}`,
-    failureRedirect: `http://${process.env.CORS_ORIGIN}/signin`,
+    failureRedirect: `${process.env.CORS_ORIGIN}/signin`,
     // session: false,
     // failureMessage: true,
     // failWithError: true,
@@ -66,7 +66,7 @@ router.get(
     );
     const tokenEncrypted = encryptToken(accessToken);
     res.redirect(
-      `http://${process.env.CORS_ORIGIN}/app/redirection/${tokenEncrypted}`
+      `${process.env.CORS_ORIGIN}/app/redirection/${tokenEncrypted}`
     );
   }
 ); //redirect empty LS and response !=null

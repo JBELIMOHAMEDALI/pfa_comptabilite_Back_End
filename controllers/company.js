@@ -8,12 +8,10 @@ exports.getall=(req,res)=>{
 exports.insert=(req,res)=>{
     const {nom_societe,domaine_societe}=req.body;
     const values=[[[nom_societe,domaine_societe]]];
-                    console.log(req.body)
                     //
     const sql="INSERT INTO societe(nom_societe, domaine_societe) VALUES ?";
     
     queryy.sql_request(sql,values,res);
-    //console.log(queryy.sql_request(sql,values,res));
 }
 //
 exports.update=(req,res)=>{

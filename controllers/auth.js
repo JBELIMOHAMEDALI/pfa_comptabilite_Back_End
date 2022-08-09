@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const dbClient = require("../config/db_config");
 const jwt = require("jsonwebtoken");
 const mailer = require("../functions/mailer");
-const {decrpytData,encryptData,encryptToken} = require("../functions/encryption");
+const {encryptData,encryptToken} = require("../functions/encryption");
 const query = require("../functions/db_query");
 
 exports.validate = (req, res) => {
