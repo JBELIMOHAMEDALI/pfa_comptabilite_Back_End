@@ -21,15 +21,18 @@ exports.insert = (req, res) => {
 //
 exports.update = (req, res) => {
   const { name, domain, id_company } = req.body;
+  const {id_user}=req.decoded.user;
 
-  const values = [name, domain, id_company];
+  const values = [name, domain, id_company,id_user];
   const sql =
-    "UPDATE domain SET name = ?, domain = ? WHERE id_company = ?";
+    "UPDATE company SET name = ?, domain = ? WHERE id_company = ? and id_user =?";
   queryy.sql_request(sql, values, res);
 };
 
 exports.delete = (req, res) => {
-  const values = [req.params.id];
-  const sql = "delete from company where id_company = ?";
+  const {id_user}=req.decoded.user;
+
+  const values = [req.params.id,id_user];
+  const sql = "delete from company where id_company = ? and id_user=?";
   queryy.sql_request(sql, values, res);
 };
