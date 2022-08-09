@@ -5,7 +5,7 @@ const checkToken=require("../middleware/checkToken");
 const {checkAuthenticated}=require("../middleware/checkSession");
 
 
-router.get("/get",checkAuthenticated,checkToken,dashboard.get);
+router.get("/get",dashboard.get);
 
 module.exports=router;
  

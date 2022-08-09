@@ -4,6 +4,7 @@ const app = express(); //execution express
 const db = require("./config/db_config"); //connection db
 const cors = require("cors"); //blockage acces
 const auth = require("./routes/auth");
+const flash = require("express-flash");
 
 // const googleAuth = require("./routes/googleAuth");
 
@@ -18,6 +19,7 @@ const {initGooglePassportConfig,initLocalPassportConfig}=require("./config/passp
 const {findLocalUserByemail,findUserByid} = require('./functions/findUser');
 
 
+app.use(flash());
 
 app.use(session({
   secret:process.env.SESSION_SECRET,
@@ -28,8 +30,8 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session())
 
-initGooglePassportConfig(passport,findUserByid)
-initLocalPassportConfig(passport,findLocalUserByemail,findUserByid)
+initGooglePassportConfig(passport)
+initLocalPassportConfig(passport)
 
 
 app.use(

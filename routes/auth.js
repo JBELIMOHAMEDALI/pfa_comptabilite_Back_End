@@ -3,33 +3,21 @@ const router = express.Router();
 const auth = require("../controllers/auth");
 const passport = require("passport");
 const { encryptToken } = require("../functions/encryption");
-const {
-  checkLoginAndRegister,
-} = require("../middleware/checkSession");
-const jwt = require('jsonwebtoken');
+const { checkLoginAndRegister } = require("../middleware/checkSession");
+const jwt = require("jsonwebtoken");
 
 router.post(
   "/signin",
   passport.authenticate("local", {
-    // successRedirect:`http://${process.env.CORS_ORIGIN}/app/redirection/${tokenEncrypted}`,
-    failureRedirect: `${process.env.CORS_ORIGIN}/signin`,
     failureFlash: true,
   }),
   (req, res) => {
-    const accessToken = jwt.sign(
-      {
-        user: req.user,
-      },
-      process.env.ACCESS_TOKEN,
-      { expiresIn: process.env.EXPIRES_IN }
-    );
-    const tokenEncrypted = encryptToken.encrypt(accessToken);
-    res.redirect(
-      `${process.env.CORS_ORIGIN}/app/redirection/${tokenEncrypted}`
-    );
+    const { uid, status } = req.user;
+    if (uid === -1) req.session.destroy();
+    return res.status(status).json(req.user);
   }
 );
-// router.post("/signin",auth.signin);
+
 router.post("/signup", auth.signup);
 router.get("/validate/:hasheduser", auth.validate);
 
@@ -45,7 +33,6 @@ router.get(
       "https://www.googleapis.com/auth/userinfo.email",
     ],
   })
-  // (req, res) => res.json('access')
 );
 router.get(
   "/google/callback",
@@ -53,8 +40,6 @@ router.get(
     // successRedirect: `http://localhost:4200/app/dashboard?response=${req.user.id}`,
     failureRedirect: `${process.env.CORS_ORIGIN}/signin`,
     // session: false,
-    // failureMessage: true,
-    // failWithError: true,
   }),
   (req, res) => {
     const accessToken = jwt.sign(
@@ -71,11 +56,7 @@ router.get(
   }
 ); //redirect empty LS and response !=null
 
-router.get("/check", checkLoginAndRegister, (req, res) => {
- return res.status(200).json({
-    check: "validated ! ",
-  });
-});
+
 
 router.post("/logout", auth.logout);
 

@@ -25,6 +25,7 @@ module.exports.findLocalUserByemail = (email, password) => {
     }
     if (rows.length == 1) {
       bcrypt.compare(password, rows[0].password, (err, same) => {
+
         if (err) {
           //   return res.status(500).json({
           //     err: true,
@@ -42,7 +43,9 @@ module.exports.findLocalUserByemail = (email, password) => {
                 where user.id_user=?
               `;
           dbClient.query(sql, [id_user], (err, rows) => {
-            if (!err) {
+            console.log(rows[0]);
+
+            // if (!err) {
                 return rows[0]
             //   const { nb_companies } = rows[0];
             //   const payload = {
@@ -70,13 +73,14 @@ module.exports.findLocalUserByemail = (email, password) => {
             //     message: "Auth successfull !",
             //     accessToken: encryptedToken,
             //   };
-            } else {
+            // } 
+            // else {
               //   return res.status(500).json({
               //     err: true,
               //     message: "An error occured in server !",
               //   });
-              return null
-            }
+              // return null
+            // }
           });
         } else {
           //   return res.status(404).json({

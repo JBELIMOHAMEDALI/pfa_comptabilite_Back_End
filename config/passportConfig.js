@@ -1,10 +1,11 @@
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 const client = require("./db_config");
 const LocalStrategy = require("passport-local").Strategy;
-const {encryptToken} = require('../functions/encryption');
+const { encryptToken } = require("../functions/encryption");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-
-module.exports.initGooglePassportConfig = (passport, getUserById) => {
+module.exports.initGooglePassportConfig = (passport) => {
   passport.use(
     new GoogleStrategy(
       {
@@ -23,15 +24,11 @@ module.exports.initGooglePassportConfig = (passport, getUserById) => {
           if (err) return done(err);
           if (rows.length == 1) {
             if (rows[0].provider === "google") {
+              // console.log(rows[0]);
               return done(null, rows[0]);
             } else {
               return done(null, false);
             }
-            // if()
-            // const { nb_companies } = rows[0];
-            // if (nb_companies == 0) {
-            //   return done(null, { ...profile, nb_companies });
-            // } else {
           } else {
             //create google user
             const values = [
@@ -53,7 +50,7 @@ module.exports.initGooglePassportConfig = (passport, getUserById) => {
               "INSERT INTO user(profileId, firstname,lastname,email,actif,provider) VALUES ?";
             client.query(sql, values, (err, rows) => {
               if (err) return done(err, null);
-              return done(null, { ...profile, nb_companies: 0 });
+              return done(null, { ...profile, nb_companies: 0,id_user:rows.insertId });
             });
           }
         });
@@ -61,39 +58,100 @@ module.exports.initGooglePassportConfig = (passport, getUserById) => {
     )
   );
   passport.serializeUser((user, done) => done(null, user.id_user));
-  passport.deserializeUser((uid, done) => done(null, getUserById(uid)));
+  passport.deserializeUser((user, done) => {
+    const sql = `select * from user where user.id_user=?`;
+    client.query(sql, [user.id_user], (err, rows) => {
+      if (err) return done(err, false);
+      done(null, rows[0].id_user);
+    });
+    // done(null, getUserById(user.id_user));
+  });
 };
 
-module.exports.initLocalPassportConfig = (
-  passport,
-  getUserByEmailAndPwd,
-  getUserById
-) => {
+module.exports.initLocalPassportConfig = (passport) => {
   const authenticateUser = (email, password, done) => {
-    const user = getUserByEmailAndPwd(email, password);
-    if (user == null) {
-      return done(null, false, "No user with that email AND/OR password ! "); //(server error,userfound or not,message)
-    }
-    const { nb_companies } = user;
-    const payload = {
-      user: { ...user, nb_companies } 
-    };
-    const accessToken = jwt.sign(
-      {
-        userData: payload,
-      },
-      process.env.ACCESS_TOKEN,
-      { expiresIn: process.env.EXPIRES_IN }
-    );
-    const encryptedToken = encryptToken(accessToken);
+    let sql = ` SELECT DISTINCT user.* from user where USER.email=? AND USER.actif=?and provider=? `;
 
-    const render= {
-      err: false,
-      message: "Auth successfull !",
-      accessToken: encryptedToken,
-      uid:user.id_user
-    };
-    return done(null, render);
+    client.query(sql, [email, "1", "ATA"], (err, rows) => {
+      if (err) {
+        return done(null, {
+          status: 500,
+          err: true,
+          message: "Server error ",
+          uid: -1,
+        });
+      }
+      if (rows.length == 1) {
+        bcrypt.compare(password, rows[0].password, (err, same) => {
+          if (same) {
+            const { id_user, crypted } = rows[0];
+            sql = `    
+                  SELECT user.*, COUNT(id_company) as nb_companies
+                  FROM COMPANY JOIN user 
+                  ON company.id_user=user.id_user                  
+                  where user.id_user=?
+                `;
+            client.query(sql, [id_user], (err, rows) => {
+              const user = rows[0];
+              if (err)
+                return done(null, {
+                  status: 500,
+                  err: true,
+                  message: "Server error ",
+                  uid: -1,
+                });
+              if (user == null) {
+                return done(null, {
+                  status: 404,
+                  err: true,
+                  message: "Auth failed ! Check email AND/OR password ",
+                  uid: -1,
+                }); //(server error,userfound or not,message)
+              }
+              const { nb_companies } = user;
+              const payload = {
+                user: { ...user, nb_companies },
+              };
+              const accessToken = jwt.sign(
+                {
+                  userData: payload,
+                },
+                process.env.ACCESS_TOKEN,
+                { expiresIn: process.env.EXPIRES_IN }
+              );
+              const encryptedToken = encryptToken(accessToken);
+
+              const render = {
+                status: 200,
+                err: false,
+                message: "Auth successfull !",
+                accessToken: encryptedToken,
+                uid: user.id_user,
+              };
+              return done(null, render);
+            });
+          } else {
+            return done(
+              null,
+              {
+                status: 404,
+                err: true,
+                message: "Auth failed ! Check email AND/OR password ",
+                uid: -1,
+              },
+              "Server error ! "
+            ); //(server error,userfound or not,message)
+          }
+        });
+      } else {
+        return done(null, {
+          status: 404,
+          err: true,
+          message: "Auth failed ! Check email AND/OR password ",
+          uid: -1,
+        }); //(server error,userfound or not,message)
+      }
+    });
   };
 
   passport.use(
@@ -102,8 +160,15 @@ module.exports.initLocalPassportConfig = (
       authenticateUser
     )
   );
-  passport.serializeUser((user, done) => done(null, user.id));
-  passport.deserializeUser((render, done) =>{console.log(render); done(null, getUserById(render.uid))});
+  passport.serializeUser((user, done) => done(null, user.uid));
+  passport.deserializeUser((user, done) => {
+    // done(null, getUserById(render.uid));
+    const sql = `select * from user where user.id_user=?`;
+    client.query(sql, [user.id_user], (err, rows) => {
+      if (err) return done(err, false);
+      done(null, rows[0].id_user);
+    });
+  });
 };
 
 //done first parameter is the err
