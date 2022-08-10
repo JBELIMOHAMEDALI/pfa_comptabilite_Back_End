@@ -18,7 +18,7 @@ module.exports.sql_request = (sql, values, res) => {
       return res.status(500).json({
         err: true,
         message: err.sqlMessage,
-        // message:err.sqlMessage.includes('Duplicate')?'Redondances de données ! ':'Opération non effectuée ! Réessayer plus tard',
+        // message:err.sqlMessage.includes('Duplicate')?'Data already exists ! ':'An error occured in server ! Retry later',
       });
     }
   });

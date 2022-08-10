@@ -4,5 +4,5 @@ const server = http.createServer(app);
 const port =5001||process.env.SERVER_PORT;
 server.listen(port,()=>console.log(`Server running on port ${port}`));
 
-//refreshToken
-//passport session
+
+//regex,firstcompany,refreshT,selected company in root,
