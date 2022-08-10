@@ -7,7 +7,7 @@ const auth = require("./routes/auth");
 
 const employees = require("./routes/employees");
 
-// const googleAuth = require("./routes/googleAuth");
+const session = require("express-session");
 
 const company = require("./routes/company");
 const plan_comptable = require("./routes/plan_comptable");
@@ -29,8 +29,17 @@ const {initGooglePassportConfig,initLocalPassportConfig}=require("./config/passp
 
 // }));
 
-// app.use(passport.initialize());
-// app.use(passport.session())
+app.use(session({
+  secret:process.env.SESSION_SECRET,
+  resave:false,
+  saveUninitialized:false,
+  cookie: {  }
+
+}));
+
+app.use(passport.initialize());
+app.use(passport.session())
+
 
 initGooglePassportConfig(passport)
 initLocalPassportConfig(passport)
