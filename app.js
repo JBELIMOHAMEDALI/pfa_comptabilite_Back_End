@@ -4,7 +4,8 @@ const app = express(); //execution express
 const db = require("./config/db_config"); //connection db
 const cors = require("cors"); //blockage acces
 const auth = require("./routes/auth");
-const flash = require("express-flash");
+
+const employees = require("./routes/employees");
 
 // const googleAuth = require("./routes/googleAuth");
 
@@ -58,6 +59,7 @@ app.use("/company", company);
 app.use("/plan_comptable", plan_comptable);
 app.use("/tax", tax);
 app.use("/user", userInfo);
+app.use("/employee", employees);
 
 
 
