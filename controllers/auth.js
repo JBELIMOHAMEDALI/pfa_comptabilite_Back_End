@@ -279,36 +279,7 @@ exports.verify_reset_email = (req, res, next) => {
 };
 exports.verify_reset_code = (req, res) => {
   const { email, code } = req.body;
-  let sql = "";
-  sql =
-    "select reset_code from user where email = ? and actif =? and provider =?";
-  // dbClient.query(sql, [email], (err, rows) => {
-
-  //   if (!err) {
-  //     switch (rows.length) {
-  //       case 0:
-  //         return res.status(404).json({
-  //           err: true,
-  //           message: "This code doesn't exist ! ",
-  //         });
-  //       case 1:
-  //         return res.status(200).json({
-  //           err: false,
-  //           message: "Valid code ! ",
-  //         });
-  //       default:
-  //         return res.status(500).json({
-  //           err: true,
-  //           message: "Operation not performed ! Try again later",
-  //         });
-  //     }
-  //   } else
-  //     return res.status(500).json({
-  //       err: true,
-  //       message: "Operation not performed! Try again later",
-  //     });
-  // });
-
+  let sql =    "select reset_code from user where email = ? and actif =? and provider =?";
   dbClient.query(sql, [email, "1", "ATA"], (err, rows) => {
     if (err) {
       return res.status(500).json({

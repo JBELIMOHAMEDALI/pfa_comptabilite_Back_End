@@ -10,7 +10,7 @@ const employees = require("./routes/employees");
 const session = require("express-session");
 
 const company = require("./routes/company");
-const plan_comptable = require("./routes/plan_comptable");
+const planComptable = require("./routes/planComptable");
 const tax = require("./routes/tax");
 const dashboard = require("./routes/dashboard");
 const userInfo = require("./routes/userinfo");
@@ -19,15 +19,6 @@ const passport = require("passport");
 const {initGooglePassportConfig,initLocalPassportConfig}=require("./config/passportConfig");
 
 
-// app.use(flash());
-
-// app.use(session({
-//   secret:process.env.SESSION_SECRET,
-//   resave:false,
-//   saveUninitialized:false,
-//   cookie: {  }
-
-// }));
 
 app.use(session({
   secret:process.env.SESSION_SECRET,
@@ -60,15 +51,17 @@ db.connect((error) => {
   console.log("Connected to db ");
 });
 
+app.use('/uploads/excel-files',express.static('uploads/excel-files'))
 
 
 app.use("/dashboard", dashboard);
 app.use("/auth/user", auth);
 app.use("/company", company);
-app.use("/plan_comptable", plan_comptable);
+// app.use("/plan_comptable", plan_comptable);
 app.use("/tax", tax);
 app.use("/user", userInfo);
 app.use("/employee", employees);
+app.use("/plan/comptable", planComptable);
 
 
 
