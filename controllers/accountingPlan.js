@@ -60,7 +60,7 @@ function importFileToDb(req, res) {
       const array = rows.filter((row) => !row.includes(null));
       const filename = req.file.filename;
       array.map((row) => row.push(filename));
-      const sql = "INSERT INTO pcmptable (`col`,`desc`,`source`) VALUES ?";
+      const sql = "INSERT INTO accounting_plan (`col`,`desc`,`source`) VALUES ?";
       query.sql_request(sql, [array], res);
     })
     .catch((error) => {
@@ -72,7 +72,7 @@ function importFileToDb(req, res) {
 }
 
 module.exports.unlinkFile = (req, res) => {
-  const filename = req.params.fileName;
+  const {filename,id_company} = req.params;
   fs.unlink(`${process.env.FILES_PATH}/${filename}`, (err) => {
     if (err) {
       return res.status(500).json({
@@ -80,14 +80,14 @@ module.exports.unlinkFile = (req, res) => {
         message: err.message,
       });
     }
-    const sql = `delete from pcmptable where source = ?`;
-    query.sql_request(sql, [filename], res);
+    const sql = `delete from accounting_plan where source = ? and id_company = ?`;
+    query.sql_request(sql, [filename,id_company], res);
   });
 };
 
 module.exports.exportFile = (req, res) => {
   const filename = req.params.fileName;
-  const sql = `select * from pcmptable where source = ?`;
+  const sql = `select id,col,desc from accounting_plan where source = ?`;
   dbClient.query(sql, [filename], async (err, rows) => {
     if (err) {
       return res.status(500).json({
@@ -111,7 +111,11 @@ module.exports.exportFile = (req, res) => {
         `${process.env.FILES_PATH}/${filename}` //f server path
       )
       .then(() => {
-        // console.log(__dirname);
+        // const path = require('path');
+        // const file = path.resolve(__dirname, `/file.txt`);
+        // console.log(file);
+        // res.download(path.resolve('./file.txt'));
+
         // res.download("uploads\\excel-files\\PLAN COMPTABLE.xlsx",'filename',(err)=>{
         //   console.log(err);
         // });
@@ -123,4 +127,19 @@ module.exports.exportFile = (req, res) => {
           .json({ err: true, created: false, message: error.message });
       });
   });
+};
+
+module.exports.getaccountingPlanByCompany = (req, res) => {
+  const { id_company, sourceFile } = req.params;
+  const sql = `select id,col,desc from accounting_plan
+  join company on company.id_company=accounting_plan.id_company 
+   where accounting_plan.id_company=? and accounting_plan.source =?`;
+  query.sql_request(sql, [id_company,sourceFile], res);
+};
+
+module.exports.getAllUserSources = (req, res) => {
+  const sql = `select distinct source from accounting_plan 
+join company on company.id_company=accounting_plan.id_company 
+where accounting_plan.id_company = ? `;
+  query.sql_request(sql, [req.params.id_company], res);
 };

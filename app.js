@@ -10,7 +10,7 @@ const employees = require("./routes/employees");
 const session = require("express-session");
 
 const company = require("./routes/company");
-const planComptable = require("./routes/planComptable");
+const accountigPlan = require("./routes/accountigPlan");
 const tax = require("./routes/tax");
 const dashboard = require("./routes/dashboard");
 const userInfo = require("./routes/userinfo");
@@ -61,7 +61,7 @@ app.use("/company", company);
 app.use("/tax", tax);
 app.use("/user", userInfo);
 app.use("/employee", employees);
-app.use("/plan/comptable", planComptable);
+app.use("/accounting/plan", accountigPlan);
 
 
 
