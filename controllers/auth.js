@@ -7,9 +7,8 @@ const query = require("../functions/db_query");
 
 exports.validate = (req, res) => {
   const crypted_user = req.params.hasheduser;
-  let sql = "";
   try {
-    sql = "select * from user where crypted = ? and actif = ? and provider = ?";
+    let sql = "select * from user where crypted = ? and actif = ? and provider = ?";
     dbClient.query(sql, [crypted_user, "0", "ATA"], (err, rows) => {
       if (err)
         return res.status(500).json({
@@ -127,8 +126,7 @@ exports.validate = (req, res) => {
 
 exports.signup = (req, res) => {
   const { email, password, firstname, lastname } = req.body;
-  let sql = "";
-  sql = "select * from user where email = ?";
+  let sql = "select * from user where email = ?";
   dbClient.query(sql, [email], (err, rows) => {
     if (!err) {
       if (rows.length > 0) {
@@ -205,8 +203,7 @@ exports.signup = (req, res) => {
 
 exports.verify_reset_email = (req, res, next) => {
   const { email } = req.body;
-  let sql = "";
-  sql = "select * from user where email = ? AND actif =? AND provider=?";
+  let sql = "select * from user where email = ? AND actif =? AND provider=?";
   dbClient.query(sql, [email, "1", "ATA"], (err, rows) => {
     if (!err) {
       switch (rows.length) {
@@ -279,7 +276,7 @@ exports.verify_reset_email = (req, res, next) => {
 };
 exports.verify_reset_code = (req, res) => {
   const { email, code } = req.body;
-  let sql =    "select reset_code from user where email = ? and actif =? and provider =?";
+  let sql = "select reset_code from user where email = ? and actif =? and provider =?";
   dbClient.query(sql, [email, "1", "ATA"], (err, rows) => {
     if (err) {
       return res.status(500).json({

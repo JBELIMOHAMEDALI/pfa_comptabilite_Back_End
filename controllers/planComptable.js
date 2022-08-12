@@ -2,6 +2,8 @@ const fs = require("fs");
 const multer = require("multer");
 const query = require("../functions/db_query");
 const readXlsxFile = require("read-excel-file/node");
+const dbClient = require("../config/db_config");
+const excel = require("exceljs");
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
@@ -30,33 +32,36 @@ const uploadExcel = multer({
     if (excelTypes.includes(file.mimetype)) {
       callback(null, true);
     } else {
-      callback(new Error("make sure you File type must be .xls"), false);
+      callback(new Error("make sure you File must be excel"), false);
     }
   },
 });
 
 module.exports.importFile = (req, res) => {
-  const uploadResult = uploadExcel.single("plan");
+  const uploadResult = uploadExcel.single("plan-comptable-excel-file");
   uploadResult(req, res, (err) => {
     if (!err) {
       importFileToDb(
-        req.file.path, //uploads\\excel-files\\PLAN COMPTABLE.xlsx
+        req, //uploads\\excel-files\\PLAN COMPTABLE.xlsx
         res
       );
     } else {
       res.status(500).json({
         err: true,
-        message: "File not uploaded ! retry later",
+        message: err.message,
       });
     }
   });
 };
 
-function importFileToDb(exFile, res) {
-  readXlsxFile(exFile)
+function importFileToDb(req, res) {
+  readXlsxFile(req.file.path)
     .then((rows) => {
-      const sql = "INSERT INTO pcmptable (`col`,`desc`) VALUES ?";
-      query.sql_request(sql, [rows.filter((row) => !row.includes(null))], res);
+      const array = rows.filter((row) => !row.includes(null));
+      const filename = req.file.filename;
+      array.map((row) => row.push(filename));
+      const sql = "INSERT INTO pcmptable (`col`,`desc`,`source`) VALUES ?";
+      query.sql_request(sql, [array], res);
     })
     .catch((error) => {
       return res.status(500).json({
@@ -68,20 +73,54 @@ function importFileToDb(exFile, res) {
 
 module.exports.unlinkFile = (req, res) => {
   const filename = req.params.fileName;
-  fs.unlink(`${process.env.UNLINK_FILE_PATH}/${filename}.xls`, (err) => {
+  fs.unlink(`${process.env.FILES_PATH}/${filename}`, (err) => {
     if (err) {
       return res.status(500).json({
         err: true,
         message: err.message,
-        // message:'remove file failed ! please retry later'
       });
     }
-    // const sql = `delete from pcomptable where source = ?`;
-    // query.sql_request(sql, [path], res);
+    const sql = `delete from pcmptable where source = ?`;
+    query.sql_request(sql, [filename], res);
+  });
+};
 
-    return res.status(200).json({
-      err: false,
-      message: "File unlinked Successfully !",
-    });
+module.exports.exportFile = (req, res) => {
+  const filename = req.params.fileName;
+  const sql = `select * from pcmptable where source = ?`;
+  dbClient.query(sql, [filename], async (err, rows) => {
+    if (err) {
+      return res.status(500).json({
+        err: true,
+        message: "An error occured in server ! Retry later ",
+      });
+    }
+    const json = JSON.parse(JSON.stringify(rows));
+    const workbook = new excel.Workbook();
+    const worksheet = workbook.addWorksheet("plan_comptable"); //creating worksheet
+
+    worksheet.columns = [
+      { header: "Id", key: "id", width: 10 },
+      { header: "Col", key: "col", width: 30 },
+      { header: "Desc", key: "desc", width: 30 },
+    ];
+
+    worksheet.addRows(json);
+    workbook.xlsx
+      .writeFile(
+        `${process.env.FILES_PATH}/${filename}` //f server path
+      )
+      .then(() => {
+        // console.log(__dirname);
+        // res.download("uploads\\excel-files\\PLAN COMPTABLE.xlsx",'filename',(err)=>{
+        //   console.log(err);
+        // });
+        return res.status(200).json({ err: false, created: true });
+      })
+      .catch((error) => {
+        return res
+          .status(500)
+          .json({ err: true, created: false, message: error.message });
+      });
   });
 };
