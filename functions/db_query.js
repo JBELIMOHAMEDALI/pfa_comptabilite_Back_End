@@ -15,6 +15,7 @@ module.exports.sql_request = (sql, values, res) => {
           // message:err,
         });
     } else {
+      
       return res.status(500).json({
         err: true,
         message: err.sqlMessage,

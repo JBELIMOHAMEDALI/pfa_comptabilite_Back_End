@@ -19,7 +19,6 @@ router.post(
     //   req.session.cookie.maxAge = hour;
     // }
     // req.session.save()
-    // console.log(req.cookies);
     return res.status(status).json(req.user);
   }
 );

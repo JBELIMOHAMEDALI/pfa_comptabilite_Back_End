@@ -7,6 +7,13 @@ exports.getUserCompanies = (req, res) => {
   query.sql_request(sql, [id_user], res);
 };
 
+exports.getfirstCompany = (req, res) => {
+  const {id_user}=req.decoded.user;
+const sql =
+  "select id_company from company join user on user.id_user=company.id_user where user.id_user=? LIMIT 1";
+query.sql_request(sql, [id_user], res);
+};
+
 
 exports.insert = (req, res) => {
   const {id_user}=req.decoded.user;

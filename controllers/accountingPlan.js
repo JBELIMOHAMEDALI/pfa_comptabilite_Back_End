@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
     callback(null, "./uploads/excel-files"); //filename already used
   },
   filename: (req, file, callback) => {
-    const filename = file.originalname.split(".")[0];
+    const filename = file&&file.originalname.split(".")[0];
     callback(null, filename + ".xls");
   },
 });
@@ -38,7 +38,7 @@ const uploadExcel = multer({
 });
 
 module.exports.importFile = (req, res) => {
-  const uploadResult = uploadExcel.single("plan-comptable-excel-file");
+  const uploadResult = uploadExcel.single("accounting-plan-excel-file");
   uploadResult(req, res, (err) => {
     if (!err) {
       importFileToDb(
@@ -55,12 +55,17 @@ module.exports.importFile = (req, res) => {
 };
 
 function importFileToDb(req, res) {
+  const { id_company } = req.params;
   readXlsxFile(req.file.path)
     .then((rows) => {
       const array = rows.filter((row) => !row.includes(null));
       const filename = req.file.filename;
-      array.map((row) => row.push(filename));
-      const sql = "INSERT INTO accounting_plan (`col`,`desc`,`source`) VALUES ?";
+      array.map((row) => {
+        row.push(filename);
+        row.push(id_company);
+      });
+      const sql =
+        "INSERT INTO accounting_plan (`col`,`description`,`source`,`id_company`) VALUES ?";
       query.sql_request(sql, [array], res);
     })
     .catch((error) => {
@@ -72,7 +77,8 @@ function importFileToDb(req, res) {
 }
 
 module.exports.unlinkFile = (req, res) => {
-  const {filename,id_company} = req.params;
+  const { filename, id_company } = req.params;
+
   fs.unlink(`${process.env.FILES_PATH}/${filename}`, (err) => {
     if (err) {
       return res.status(500).json({
@@ -81,7 +87,7 @@ module.exports.unlinkFile = (req, res) => {
       });
     }
     const sql = `delete from accounting_plan where source = ? and id_company = ?`;
-    query.sql_request(sql, [filename,id_company], res);
+    query.sql_request(sql, [filename, id_company], res);
   });
 };
 
@@ -97,7 +103,7 @@ module.exports.exportFile = (req, res) => {
     }
     const json = JSON.parse(JSON.stringify(rows));
     const workbook = new excel.Workbook();
-    const worksheet = workbook.addWorksheet("plan_comptable"); //creating worksheet
+    const worksheet = workbook.addWorksheet("accounting_plan"); //creating worksheet
 
     worksheet.columns = [
       { header: "Id", key: "id", width: 10 },
@@ -131,10 +137,10 @@ module.exports.exportFile = (req, res) => {
 
 module.exports.getaccountingPlanByCompany = (req, res) => {
   const { id_company, sourceFile } = req.params;
-  const sql = `select id,col,desc from accounting_plan
+  const sql = `select id , col , description from accounting_plan
   join company on company.id_company=accounting_plan.id_company 
    where accounting_plan.id_company=? and accounting_plan.source =?`;
-  query.sql_request(sql, [id_company,sourceFile], res);
+  query.sql_request(sql, [id_company, sourceFile], res);
 };
 
 module.exports.getAllUserSources = (req, res) => {
@@ -142,4 +148,13 @@ module.exports.getAllUserSources = (req, res) => {
 join company on company.id_company=accounting_plan.id_company 
 where accounting_plan.id_company = ? `;
   query.sql_request(sql, [req.params.id_company], res);
+};
+
+
+module.exports.deleterow = (req, res) => {
+  const { filename, id_company,id_row } = req.params;
+
+    const sql = `delete from accounting_plan where id=? source = ? and id_company = ?`;
+    query.sql_request(sql, [id_row,filename, id_company], res);
+  
 };
