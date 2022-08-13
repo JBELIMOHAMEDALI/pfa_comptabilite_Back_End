@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
     callback(null, "./uploads/excel-files"); //filename already used
   },
   filename: (req, file, callback) => {
-    const filename = file&&file.originalname.split(".")[0];
+    const filename = file && file.originalname.split(".")[0];
     callback(null, filename + ".xls");
   },
 });
@@ -92,8 +92,8 @@ module.exports.unlinkFile = (req, res) => {
 };
 
 module.exports.exportFile = (req, res) => {
-  const filename = req.params.fileName;
-  const sql = `select id,col,desc from accounting_plan where source = ?`;
+  const filename = req.params.filename;
+  const sql = `select id,col,description,id_company from accounting_plan where source = ?`;
   dbClient.query(sql, [filename], async (err, rows) => {
     if (err) {
       return res.status(500).json({
@@ -108,7 +108,8 @@ module.exports.exportFile = (req, res) => {
     worksheet.columns = [
       { header: "Id", key: "id", width: 10 },
       { header: "Col", key: "col", width: 30 },
-      { header: "Desc", key: "desc", width: 30 },
+      { header: "Description", key: "description", width: 30 },
+      { header: "id_company", key: "id_company", width: 10 },
     ];
 
     worksheet.addRows(json);
@@ -137,7 +138,8 @@ module.exports.exportFile = (req, res) => {
 
 module.exports.getaccountingPlanByCompany = (req, res) => {
   const { id_company, sourceFile } = req.params;
-  const sql = `select id , col , description from accounting_plan
+  const sql = `select accounting_plan.id , accounting_plan.col , accounting_plan.description, 
+  accounting_plan.id_company from accounting_plan
   join company on company.id_company=accounting_plan.id_company 
    where accounting_plan.id_company=? and accounting_plan.source =?`;
   query.sql_request(sql, [id_company, sourceFile], res);
@@ -150,11 +152,24 @@ where accounting_plan.id_company = ? `;
   query.sql_request(sql, [req.params.id_company], res);
 };
 
-
 module.exports.deleterow = (req, res) => {
-  const { filename, id_company,id_row } = req.params;
+  const { id_row } = req.params;
 
-    const sql = `delete from accounting_plan where id=? source = ? and id_company = ?`;
-    query.sql_request(sql, [id_row,filename, id_company], res);
-  
+  const sql = `delete from accounting_plan where id=? `;
+  query.sql_request(sql, [id_row], res);
+};
+
+module.exports.updaterow = (req, res) => {
+  const {  id_row } = req.params;
+  const { col, description } = req.body;
+
+  const sql = `UPDATE accounting_plan SET col=?,description=? where id=? `;
+  query.sql_request(sql, [col, description, id_row], res);
+};
+
+
+module.exports.addrow = (req, res) => {
+  const { col,description,source,id_company } = req.body;
+ const sql= "INSERT INTO accounting_plan (`col`,`description`,`source`,`id_company`) VALUES ?";
+  query.sql_request(sql, [[[col,description,source,id_company]]], res);
 };
