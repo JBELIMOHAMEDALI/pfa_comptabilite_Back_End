@@ -115,7 +115,7 @@ module.exports.exportFile = (req, res) => {
     worksheet.addRows(json);
     workbook.xlsx
       .writeFile(
-        `${process.env.FILES_PATH}/${filename}` //f server path
+        `${process.env.WRITE_FILE_PATH}/${filename}` //f server path
       )
       .then(() => {
         // const path = require('path');
@@ -126,7 +126,7 @@ module.exports.exportFile = (req, res) => {
         // res.download("uploads\\excel-files\\PLAN COMPTABLE.xlsx",'filename',(err)=>{
         //   console.log(err);
         // });
-        return res.status(200).json({ err: false, created: true });
+        return res.status(200).json({ err: false, created: true,'message':"File exported successfully !" });
       })
       .catch((error) => {
         return res
