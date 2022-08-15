@@ -2,8 +2,6 @@ const fs = require("fs");
 const multer = require("multer");
 const query = require("../functions/db_query");
 const readXlsxFile = require("read-excel-file/node");
-const dbClient = require("../config/db_config");
-const excel = require("exceljs");
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
@@ -91,50 +89,43 @@ module.exports.unlinkFile = (req, res) => {
   });
 };
 
-module.exports.exportFile = (req, res) => {
-  const filename = req.params.filename;
-  const sql = `select id,col,description,id_company from accounting_plan where source = ?`;
-  dbClient.query(sql, [filename], async (err, rows) => {
-    if (err) {
-      return res.status(500).json({
-        err: true,
-        message: "An error occured in server ! Retry later ",
-      });
-    }
-    const json = JSON.parse(JSON.stringify(rows));
-    const workbook = new excel.Workbook();
-    const worksheet = workbook.addWorksheet("accounting_plan"); //creating worksheet
+// module.exports.exportFile = (req, res) => {
+//   const filename = req.params.filename;
+//   const sql = `select id,col,description,id_company from accounting_plan where source = ?`;
+//   dbClient.query(sql, [filename], async (err, rows) => {
+//     if (err) {
+//       return res.status(500).json({
+//         err: true,
+//         message: "An error occured in server ! Retry later ",
+//       });
+//     }
+//     const json = JSON.parse(JSON.stringify(rows));
+//     const workbook = new excel.Workbook();
+//     const worksheet = workbook.addWorksheet("accounting_plan"); //creating worksheet
 
-    worksheet.columns = [
-      { header: "Id", key: "id", width: 10 },
-      { header: "Col", key: "col", width: 30 },
-      { header: "Description", key: "description", width: 30 },
-      { header: "id_company", key: "id_company", width: 10 },
-    ];
+//     worksheet.columns = [
+//       { header: "Id", key: "id", width: 10 },
+//       { header: "Col", key: "col", width: 30 },
+//       { header: "Description", key: "description", width: 30 },
+//       { header: "id_company", key: "id_company", width: 10 },
+//     ];
 
-    worksheet.addRows(json);
-    workbook.xlsx
-      .writeFile(
-        `${process.env.WRITE_FILE_PATH}/${filename}` //f server path
-      )
-      .then(() => {
-        // const path = require('path');
-        // const file = path.resolve(__dirname, `/file.txt`);
-        // console.log(file);
-        // res.download(path.resolve('./file.txt'));
-
-        // res.download("uploads\\excel-files\\PLAN COMPTABLE.xlsx",'filename',(err)=>{
-        //   console.log(err);
-        // });
-        return res.status(200).json({ err: false, created: true,'message':"File exported successfully !" });
-      })
-      .catch((error) => {
-        return res
-          .status(500)
-          .json({ err: true, created: false, message: error.message });
-      });
-  });
-};
+//     worksheet.addRows(json);
+//     workbook.xlsx
+//       .writeFile(
+//         `${process.env.WRITE_FILE_PATH}/${filename}` //f server path
+//       )
+//       .then(() => {
+//       //  return  res.download(`uploads/excel-files/${filename}`);
+//         return res.status(200).json({ err: false, created: true,'message':"File exported successfully !" });
+//       })
+//       .catch((error) => {
+//         return res
+//           .status(500)
+//           .json({ err: true, created: false, message: error.message });
+//       });
+//   });
+// };
 
 module.exports.getaccountingPlanByCompany = (req, res) => {
   const { id_company, sourceFile } = req.params;

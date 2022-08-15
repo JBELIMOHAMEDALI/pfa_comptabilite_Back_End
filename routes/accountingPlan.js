@@ -5,7 +5,7 @@ const checkAuth = require('../middleware/checkToken');
 
 router.post('/import/:id_company',checkAuth,planComptable.importFile);
 router.delete('/unlink/:id_company/:filename',checkAuth,planComptable.unlinkFile);
-router.get('/export/:filename',checkAuth,planComptable.exportFile);
+// router.get('/export/:filename',checkAuth,planComptable.exportFile);
 router.get('/get/sources/:id_company',checkAuth,planComptable.getAllUserSources);
 router.get('/get/:id_company/:sourceFile',checkAuth,planComptable.getaccountingPlanByCompany);
 
