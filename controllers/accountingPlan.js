@@ -56,15 +56,22 @@ function importFileToDb(req, res) {
   const { id_company } = req.params;
   readXlsxFile(req.file.path)
     .then((rows) => {
-      const array = rows.filter((row) => !row.includes(null));
-      const filename = req.file.filename;
-      array.map((row) => {
-        row.push(filename);
-        row.push(id_company);
+      const array = rows.filter((row) => {
+        if(row.includes(null)){
+          delete row
+        }
       });
+      const filename = req.file.filename;
+      // rows.map((row) => {
+
+      //   delete row[0]
+      //   row.push(filename);
+      //   row.push(id_company);
+      // });
+      console.log(array);
       const sql =
         "INSERT INTO accounting_plan (`col`,`description`,`source`,`id_company`) VALUES ?";
-      query.sql_request(sql, [array], res);
+      query.sql_request(sql, [rows], res);
     })
     .catch((error) => {
       return res.status(500).json({
@@ -129,11 +136,22 @@ module.exports.unlinkFile = (req, res) => {
 
 module.exports.getaccountingPlanByCompany = (req, res) => {
   const { id_company, sourceFile } = req.params;
-  const sql = `select accounting_plan.id , accounting_plan.col , accounting_plan.description, 
-  accounting_plan.id_company from accounting_plan
-  join company on company.id_company=accounting_plan.id_company 
-   where accounting_plan.id_company=? and accounting_plan.source =?`;
-  query.sql_request(sql, [id_company, sourceFile], res);
+  const { limit, offset } = req.query;
+  let sql;
+  if (req.query.limit) {
+    sql = `select accounting_plan.id , accounting_plan.col , accounting_plan.description, 
+    accounting_plan.id_company , (SELECT COUNT(*) FROM accounting_plan) AS totalItems  from accounting_plan
+    join company on company.id_company=accounting_plan.id_company 
+     where accounting_plan.id_company=? and accounting_plan.source =? 
+     LIMIT ${limit} OFFSET ${offset}`;
+  } else {
+    sql = `select accounting_plan.id , accounting_plan.col , accounting_plan.description, 
+    accounting_plan.id_company , (SELECT COUNT(*) FROM accounting_plan) AS totalItems  from accounting_plan
+    join company on company.id_company=accounting_plan.id_company 
+     where accounting_plan.id_company=? and accounting_plan.source =? `;
+  }
+
+  query.sql_request(sql, [id_company, sourceFile], res, true);
 };
 
 module.exports.getAllUserSources = (req, res) => {
@@ -151,16 +169,16 @@ module.exports.deleterow = (req, res) => {
 };
 
 module.exports.updaterow = (req, res) => {
-  const {  id_row } = req.params;
+  const { id_row } = req.params;
   const { col, description } = req.body;
 
   const sql = `UPDATE accounting_plan SET col=?,description=? where id=? `;
   query.sql_request(sql, [col, description, id_row], res);
 };
 
-
 module.exports.addrow = (req, res) => {
-  const { col,description,source,id_company } = req.body;
- const sql= "INSERT INTO accounting_plan (`col`,`description`,`source`,`id_company`) VALUES ?";
-  query.sql_request(sql, [[[col,description,source,id_company]]], res);
+  const { col, description, source, id_company } = req.body;
+  const sql =
+    "INSERT INTO accounting_plan (`col`,`description`,`source`,`id_company`) VALUES ?";
+  query.sql_request(sql, [[[col, description, source, id_company]]], res);
 };

@@ -3,9 +3,19 @@ const dbClient = require("../config/db_config");
 
 exports.getUserCompanies = (req, res) => {
   const { id_user } = req.decoded.user;
-  const sql =
-    "select company.* from company join user on user.id_user=company.id_user where user.id_user=?";
-  query.sql_request(sql, [id_user], res);
+  const values = [id_user];
+  let sql;
+  if (req.query.lilmit) {
+    sql =
+      "select * from company join user on user.id_user=company.id_user where user.id_user=? LIMIT ? OFFSET ?";
+    const { limit, offset } = req.query;
+    values.push(limit);
+    values.push(offset);
+  } else {
+    sql =
+      "select * from company join user on user.id_user=company.id_user where user.id_user=?";
+  }
+  query.sql_request(sql, values, res);
 };
 
 exports.getSelectedCompany = (req, res) => {
@@ -62,7 +72,6 @@ exports.setSelected = (req, res) => {
       });
   });
 };
-
 
 exports.verifySelectedCompany = (req, res) => {
   const { id_user } = req.decoded.user;
