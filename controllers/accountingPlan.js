@@ -56,19 +56,11 @@ function importFileToDb(req, res) {
   const { id_company } = req.params;
   readXlsxFile(req.file.path)
     .then((rows) => {
-      const array = rows.filter((row) => {
-        if(row.includes(null)){
-          delete row
-        }
+      const filename = req.file.filename;     
+      rows.map((row) => {
+        row.push(filename);
+        row.push(id_company);
       });
-      const filename = req.file.filename;
-      // rows.map((row) => {
-
-      //   delete row[0]
-      //   row.push(filename);
-      //   row.push(id_company);
-      // });
-      console.log(array);
       const sql =
         "INSERT INTO accounting_plan (`col`,`description`,`source`,`id_company`) VALUES ?";
       query.sql_request(sql, [rows], res);
