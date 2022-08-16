@@ -3,7 +3,7 @@ const router=express.Router();
 const accountingPlan=require("../controllers/accountingPlan")
 const checkAuth = require('../middleware/checkToken');
 
-router.post('/import/:id_company',accountingPlan.importFile);
+router.post('/import/:id_company',checkAuth,accountingPlan.importFile);
 router.delete('/unlink/:id_company/:filename',checkAuth,accountingPlan.unlinkFile);
 // router.get('/export/:filename',checkAuth,accountingPlan.exportFile);
 router.get('/get/sources/:id_company',checkAuth,accountingPlan.getAllUserSources);

@@ -2,6 +2,7 @@ const fs = require("fs");
 const multer = require("multer");
 const query = require("../functions/db_query");
 const readXlsxFile = require("read-excel-file/node");
+const dbClient = require("../config/db_config");
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
@@ -56,14 +57,27 @@ function importFileToDb(req, res) {
   const { id_company } = req.params;
   readXlsxFile(req.file.path)
     .then((rows) => {
-      const filename = req.file.filename;     
+      const filename = req.file.filename;
       rows.map((row) => {
         row.push(filename);
         row.push(id_company);
       });
       const sql =
         "INSERT INTO accounting_plan (`col`,`description`,`source`,`id_company`) VALUES ?";
-      query.sql_request(sql, [rows], res);
+      dbClient.query(sql, [rows], (err, rows) => {
+        if (!err) {
+          return res.status(200).json({
+            err: false,
+            message: "File imported succesfully !",
+          });
+        } else
+          return res.status(500).json({
+            err: true,
+            message: "File must contains 2 columns ! ",
+          });
+      });
+
+      // query.sql_request(sql, [rows], res);
     })
     .catch((error) => {
       return res.status(500).json({
@@ -132,18 +146,32 @@ module.exports.getaccountingPlanByCompany = (req, res) => {
   let sql;
   if (req.query.limit) {
     sql = `select accounting_plan.id , accounting_plan.col , accounting_plan.description, 
-    accounting_plan.id_company , (SELECT COUNT(*) FROM accounting_plan) AS totalItems  from accounting_plan
+    accounting_plan.id_company , (SELECT COUNT(*) FROM accounting_plan 
     join company on company.id_company=accounting_plan.id_company 
-     where accounting_plan.id_company=? and accounting_plan.source =? 
+    where accounting_plan.id_company=? and accounting_plan.source =?) 
+    AS totalItems  
+    from accounting_plan
+    join company on company.id_company=accounting_plan.id_company 
+     where accounting_plan.id_company=? and accounting_plan.source =?
      LIMIT ${limit} OFFSET ${offset}`;
   } else {
+    //export case
     sql = `select accounting_plan.id , accounting_plan.col , accounting_plan.description, 
-    accounting_plan.id_company , (SELECT COUNT(*) FROM accounting_plan) AS totalItems  from accounting_plan
+    accounting_plan.id_company , (SELECT COUNT(*) FROM accounting_plan 
+    join company on company.id_company=accounting_plan.id_company 
+    where accounting_plan.id_company=? and accounting_plan.source =? ) 
+    AS totalItems  
+    from accounting_plan
     join company on company.id_company=accounting_plan.id_company 
      where accounting_plan.id_company=? and accounting_plan.source =? `;
   }
 
-  query.sql_request(sql, [id_company, sourceFile], res, true);
+  query.sql_request(
+    sql,
+    [id_company, sourceFile, id_company, sourceFile],
+    res,
+    true
+  );
 };
 
 module.exports.getAllUserSources = (req, res) => {

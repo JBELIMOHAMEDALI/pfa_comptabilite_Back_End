@@ -3,19 +3,18 @@ const dbClient = require("../config/db_config");
 
 exports.getUserCompanies = (req, res) => {
   const { id_user } = req.decoded.user;
-  const values = [id_user];
   let sql;
-  if (req.query.lilmit) {
-    sql =
-      "select * from company join user on user.id_user=company.id_user where user.id_user=? LIMIT ? OFFSET ?";
+  if (req.query.limit) {
     const { limit, offset } = req.query;
-    values.push(limit);
-    values.push(offset);
-  } else {
-    sql =
-      "select * from company join user on user.id_user=company.id_user where user.id_user=?";
+    sql = `select (SELECT COUNT(*) FROM company join user on user.id_user=company.id_user 
+    where user.id_user=${id_user}) AS totalItems , company.* from company 
+    join user on user.id_user=company.id_user where user.id_user=${id_user}
+    LIMIT ${limit} OFFSET ${offset}`;
+  } else {//layout companies
+    sql = `select company.* from company join user on user.id_user=company.id_user where user.id_user=${id_user}`;
   }
-  query.sql_request(sql, values, res);
+
+  query.sql_request(sql, null, res, true);
 };
 
 exports.getSelectedCompany = (req, res) => {
@@ -54,7 +53,7 @@ exports.delete = (req, res) => {
   query.sql_request(sql, values, res);
 };
 
-exports.setSelected = (req, res) => {
+exports.setSelectedCompany = (req, res) => {
   const { id_company } = req.params;
   const { id_user } = req.decoded.user;
   let sql =
@@ -71,11 +70,4 @@ exports.setSelected = (req, res) => {
         message: "Operation not performed! Try again later",
       });
   });
-};
-
-exports.verifySelectedCompany = (req, res) => {
-  const { id_user } = req.decoded.user;
-  const sql =
-    "select id_company from company join user on user.id_user=company.id_user where user.id_user=? AND selected = ?";
-  query.sql_request(sql, [id_user, "1"], res);
 };
