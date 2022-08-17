@@ -25,7 +25,7 @@ exports.insert = (req, res) => {
     description,
     agency_name,
     businessNo,
-    short_period,
+    start_period,
     filling_frequency,
     collection_type,
     id_company,
@@ -37,7 +37,7 @@ exports.insert = (req, res) => {
         description,
         agency_name,
         businessNo,
-        short_period,
+        start_period,
         filling_frequency,
         collection_type,
         id_company,
@@ -45,7 +45,7 @@ exports.insert = (req, res) => {
     ],
   ];
   const sql =
-    "insert into tax (name,description, agency_name, businessNo, short_period, filling_frequency, collection_type,id_company) values ?";
+    "insert into tax (name,description, agency_name, businessNo, start_period, filling_frequency, collection_type,id_company) values ?";
 
   query.sql_request(sql, values, res);
 };
@@ -56,7 +56,7 @@ exports.update = (req, res) => {
     description,
     agency_name,
     businessNo,
-    short_period,
+    start_period,
     filling_frequency,
     collection_type,
     id_company,
@@ -67,14 +67,14 @@ exports.update = (req, res) => {
     description,
     agency_name,
     businessNo,
-    short_period,
+    start_period,
     filling_frequency,
     collection_type,
     id_company,
     id,
   ];
   const sql =
-    "UPDATE tax SET name = ? , description = ? , agency_name = ? , businessNo = ? ,short_period = ? , filling_frequency = ? , collection_type = ? ,id_company=? WHERE id = ?";
+    "UPDATE tax SET name = ? , description = ? , agency_name = ? , businessNo = ? ,start_period = ? , filling_frequency = ? , collection_type = ? ,id_company=? WHERE id = ?";
   query.sql_request(sql, values, res);
 };
 
