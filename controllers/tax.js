@@ -1,43 +1,85 @@
-const query =require("../functions/db_query");
+const query = require("../functions/db_query");
 
-exports.getall=(req,res)=>{
-    const sql="select * from tax";
-    query.sql_request(sql,null,res);
-}
+exports.getTaxes = (req, res) => {
+  const { id_user } = req.decoded.user;
+  const { limit, offset } = req.query;
 
-exports.insert=(req,res)=>{
-    const values=[[[req.body.code_taxe,
-                    req.body.intitule,
-                    req.body.compte_taxe,
-                    req.body.type_de_taxe,
-                    req.body.sens,
-                    req.body.taux_pourcentage,
-                    req.body.numero]]];
-                   
-                    //
-    const sql="insert into taxe (code_taxe,intitule, compte_taxe, type_de_taxe, sens, taux_pourcentage, numero) values ?";
-    
-    query.sql_request(sql,values,res);
-}
+  const sql = `select 
+  
+    (SELECT COUNT(*) FROM tax
+    join user join company on 
+      user.id_user=company.id_user and company.id_company=tax.id_company
+       where user.id_user=${id_user}) 
+       AS totalItems,
+       
+       tax.* from tax 
+    join user join company on 
+      user.id_user=company.id_user and company.id_company=tax.id_company
+       where user.id_user=${id_user} LIMIT ${limit} OFFSET ${offset}`;
+  query.sql_request(sql, null, res, true);
+};
 
-exports.update=(req,res)=>{
-    const values=[req.body.code_taxe,
-        req.body.intitule,
-        req.body.compte_taxe,
-        req.body.type_de_taxe,
-        req.body.sens,
+exports.insert = (req, res) => {
+  const {
+    name,
+    description,
+    agency_name,
+    businessNo,
+    short_period,
+    filling_frequency,
+    collection_type,
+    id_company,
+  } = req.body;
+  const values = [
+    [
+      [
+        name,
+        description,
+        agency_name,
+        businessNo,
+        short_period,
+        filling_frequency,
+        collection_type,
+        id_company,
+      ],
+    ],
+  ];
+  const sql =
+    "insert into tax (name,description, agency_name, businessNo, short_period, filling_frequency, collection_type,id_company) values ?";
 
-        req.body.taux_pourcentage,
-        req.body.numero,
-        
-        req.body.id_taxe
-    ];
-    const sql="UPDATE `taxe` SET code_taxe = ? , intitule = ? , compte_taxe = ? , type_de_taxe = ? ,sens = ? , taux_pourcentage = ? , numero = ? WHERE id_taxe = ?";
-    query.sql_request(sql,values,res);
-}
+  query.sql_request(sql, values, res);
+};
 
-exports.delete=(req,res)=>{
-    const values=[req.params.id];
-    const sql="delete from taxe where id_taxe = ?";
-    query.sql_request(sql,values,res);
-}
+exports.update = (req, res) => {
+  const {
+    name,
+    description,
+    agency_name,
+    businessNo,
+    short_period,
+    filling_frequency,
+    collection_type,
+    id_company,
+    id
+  } = req.body;
+  const values = [
+    name,
+    description,
+    agency_name,
+    businessNo,
+    short_period,
+    filling_frequency,
+    collection_type,
+    id_company,
+    id,
+  ];
+  const sql =
+    "UPDATE tax SET name = ? , description = ? , agency_name = ? , businessNo = ? ,short_period = ? , filling_frequency = ? , collection_type = ? ,id_company=? WHERE id = ?";
+  query.sql_request(sql, values, res);
+};
+
+exports.delete = (req, res) => {
+  const values = [req.params.id];
+  const sql = "delete from tax where id = ?";
+  query.sql_request(sql, values, res);
+};

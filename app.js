@@ -5,7 +5,7 @@ const db = require("./config/db_config"); //connection db
 const cors = require("cors"); //blockage acces
 const auth = require("./routes/auth");
 
-const employees = require("./routes/employees");
+const employee = require("./routes/employee");
 
 const session = require("express-session");
 
@@ -57,10 +57,9 @@ app.use('/uploads/excel-files',express.static('uploads/excel-files'))
 app.use("/dashboard", dashboard);
 app.use("/auth/user", auth);
 app.use("/company", company);
-// app.use("/plan_comptable", plan_comptable);
 app.use("/tax", tax);
 app.use("/user", userInfo);
-app.use("/employee", employees);
+app.use("/employee", employee);
 app.use("/accounting/plan", accountingPlan);
 
 

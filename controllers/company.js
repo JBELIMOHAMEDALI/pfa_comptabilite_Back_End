@@ -1,7 +1,7 @@
 const query = require("../functions/db_query");
 const dbClient = require("../config/db_config");
 
-exports.getUserCompanies = (req, res) => {
+exports.getCompanies = (req, res) => {
   const { id_user } = req.decoded.user;
   let sql;
   if (req.query.limit) {

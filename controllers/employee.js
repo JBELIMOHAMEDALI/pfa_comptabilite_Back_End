@@ -1,6 +1,6 @@
 const query = require("../functions/db_query");
 
-exports.getUserEmployees = (req, res) => {
+exports.getEmployees = (req, res) => {
   const { id_user } = req.decoded.user;
   const { limit, offset } = req.query;
   const sql = `select 
@@ -64,7 +64,6 @@ exports.update = (req, res) => {
     id_company,
     id_employee,
   } = req.body;
-  // const { id_user } = req.decoded.user;
 
   const values = [
     fullname,
