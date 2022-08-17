@@ -3,18 +3,20 @@ const query = require("../functions/db_query");
 exports.getCustomers = (req, res) => {
   const { id_user } = req.decoded.user;
   const { limit, offset } = req.query;
+    const { id_company } = req.parmas;
+
   const sql = `select 
   
   (SELECT COUNT(*) FROM customer
   join user join company on 
     user.id_user=company.id_user and company.id_company=customer.id_company
-     where user.id_user=${id_user}) 
+     where user.id_user=${id_user} and customer.id_company${id_company}) 
      AS totalItems,
      
      customer.* from customer 
   join user join company on 
     user.id_user=company.id_user and company.id_company=customer.id_company
-     where user.id_user=${id_user} LIMIT ${limit} OFFSET ${offset}`;
+     where user.id_user=${id_user} and customer.id_company${id_company} LIMIT ${limit} OFFSET ${offset}`;
   query.sql_request(sql, null, res, true);
 };
 

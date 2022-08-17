@@ -3,19 +3,20 @@ const query = require("../functions/db_query");
 exports.getTaxes = (req, res) => {
   const { id_user } = req.decoded.user;
   const { limit, offset } = req.query;
-
+  const { id_company } = req.params;
   const sql = `select 
   
     (SELECT COUNT(*) FROM tax
     join user join company on 
       user.id_user=company.id_user and company.id_company=tax.id_company
-       where user.id_user=${id_user}) 
+       where user.id_user=${id_user} and tax.id_company=${id_company}) 
        AS totalItems,
        
        tax.* from tax 
     join user join company on 
       user.id_user=company.id_user and company.id_company=tax.id_company
-       where user.id_user=${id_user} LIMIT ${limit} OFFSET ${offset}`;
+       where user.id_user=${id_user} and tax.id_company=${id_company}
+        LIMIT ${limit} OFFSET ${offset}`;
   query.sql_request(sql, null, res, true);
 };
 
@@ -60,7 +61,7 @@ exports.update = (req, res) => {
     filling_frequency,
     collection_type,
     id_company,
-    id
+    id,
   } = req.body;
   const values = [
     name,

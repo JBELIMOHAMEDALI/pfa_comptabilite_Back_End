@@ -63,7 +63,7 @@ function importFileToDb(req, res) {
         row.push(id_company);
       });
       const sql =
-        "INSERT INTO accounting_plan (`col`,`description`,`source`,`id_company`) VALUES ?";
+        "INSERT INTO accounting_plan (`account_number`,`description`,`source`,`id_company`) VALUES ?";
       dbClient.query(sql, [rows], (err, rows) => {
         if (!err) {
           return res.status(200).json({
@@ -145,7 +145,7 @@ module.exports.getaccountingPlanByCompany = (req, res) => {
   const { limit, offset } = req.query;
   let sql;
   if (req.query.limit) {
-    sql = `select accounting_plan.id , accounting_plan.col , accounting_plan.description, 
+    sql = `select accounting_plan.id , accounting_plan.account_number , accounting_plan.description, 
     accounting_plan.id_company , (SELECT COUNT(*) FROM accounting_plan 
     join company on company.id_company=accounting_plan.id_company 
     where accounting_plan.id_company=? and accounting_plan.source =?) 
@@ -156,11 +156,7 @@ module.exports.getaccountingPlanByCompany = (req, res) => {
      LIMIT ${limit} OFFSET ${offset}`;
   } else {
     //export case
-    sql = `select accounting_plan.id , accounting_plan.col , accounting_plan.description, 
-    accounting_plan.id_company , (SELECT COUNT(*) FROM accounting_plan 
-    join company on company.id_company=accounting_plan.id_company 
-    where accounting_plan.id_company=? and accounting_plan.source =? ) 
-    AS totalItems  
+    sql = `select  accounting_plan.account_number , accounting_plan.description     
     from accounting_plan
     join company on company.id_company=accounting_plan.id_company 
      where accounting_plan.id_company=? and accounting_plan.source =? `;
@@ -174,7 +170,7 @@ module.exports.getaccountingPlanByCompany = (req, res) => {
   );
 };
 
-module.exports.getAllUserSources = (req, res) => {
+module.exports.getAllSources = (req, res) => {
   const sql = `select distinct source from accounting_plan 
 join company on company.id_company=accounting_plan.id_company 
 where accounting_plan.id_company = ? `;
@@ -192,13 +188,13 @@ module.exports.updaterow = (req, res) => {
   const { id_row } = req.params;
   const { col, description } = req.body;
 
-  const sql = `UPDATE accounting_plan SET col=?,description=? where id=? `;
-  query.sql_request(sql, [col, description, id_row], res);
+  const sql = `UPDATE accounting_plan SET account_number=?,description=? where id=? `;
+  query.sql_request(sql, [account_number, description, id_row], res);
 };
 
 module.exports.addrow = (req, res) => {
-  const { col, description, source, id_company } = req.body;
+  const { account_number, description, source, id_company } = req.body;
   const sql =
-    "INSERT INTO accounting_plan (`col`,`description`,`source`,`id_company`) VALUES ?";
-  query.sql_request(sql, [[[col, description, source, id_company]]], res);
+    "INSERT INTO accounting_plan (`account_number`,`description`,`source`,`id_company`) VALUES ?";
+  query.sql_request(sql, [[[account_number, description, source, id_company]]], res);
 };

@@ -2,19 +2,20 @@ const query = require("../functions/db_query");
 
 exports.getEmployees = (req, res) => {
   const { id_user } = req.decoded.user;
+  const { id_company } = req.params;
   const { limit, offset } = req.query;
   const sql = `select 
   
   (SELECT COUNT(*) FROM employee
   join user join company on 
     user.id_user=company.id_user and company.id_company=employee.id_company
-     where user.id_user=${id_user}) 
+     where user.id_user=${id_user} and employee.id_company=${id_company}) 
      AS totalItems,
      
      employee.* from employee 
   join user join company on 
     user.id_user=company.id_user and company.id_company=employee.id_company
-     where user.id_user=${id_user} LIMIT ${limit} OFFSET ${offset}`;
+     where user.id_user=${id_user} and employee.id_company=${id_company} LIMIT ${limit} OFFSET ${offset}`;
   query.sql_request(sql, null, res, true);
 };
 
