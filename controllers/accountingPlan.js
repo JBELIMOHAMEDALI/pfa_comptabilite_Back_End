@@ -145,13 +145,14 @@ module.exports.getaccountingPlanByCompany = (req, res) => {
   const { id_company, uploadFile } = req.params;
   const { limit, offset } = req.query;
   let sql;
+  // , (SELECT COUNT(*) FROM accounting_plan 
+  //   join accounting_plan_source
+  //   on accounting_plan_source.id=accounting_plan.id_source AND                      
+  //   accounting_plan_source.upload = ?) 
+  //   AS totalItems  
   if (req.query.limit) {
     sql = `select accounting_plan.id , accounting_plan.account_number , accounting_plan.description, 
-    accounting_plan.id_company , (SELECT COUNT(*) FROM accounting_plan 
-    join accounting_plan_source
-    on accounting_plan_source.id=accounting_plan.id_source AND                      
-    accounting_plan_source.upload = ?) 
-    AS totalItems  
+    accounting_plan.id_company 
     from accounting_plan join accounting_plan_source
     join company on company.id_company=accounting_plan.id_company and         
     accounting_plan_source.id=accounting_plan.id_source

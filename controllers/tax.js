@@ -4,15 +4,7 @@ exports.getTaxes = (req, res) => {
   const { id_user } = req.decoded.user;
   const { limit, offset } = req.query;
   const { id_company } = req.params;
-  const sql = `select 
-  
-    (SELECT COUNT(*) FROM tax
-    join user join company on 
-      user.id_user=company.id_user and company.id_company=tax.id_company
-       where user.id_user=${id_user} and tax.id_company=${id_company}) 
-       AS totalItems,
-       
-       tax.* from tax 
+  const sql = `select tax.* from tax 
     join user join company on 
       user.id_user=company.id_user and company.id_company=tax.id_company
        where user.id_user=${id_user} and tax.id_company=${id_company}
@@ -84,3 +76,11 @@ exports.delete = (req, res) => {
   const sql = "delete from tax where id = ?";
   query.sql_request(sql, values, res);
 };
+
+
+
+// (SELECT COUNT(*) FROM tax
+// join user join company on 
+//   user.id_user=company.id_user and company.id_company=tax.id_company
+//    where user.id_user=${id_user} and tax.id_company=${id_company}) 
+//    AS totalItems,

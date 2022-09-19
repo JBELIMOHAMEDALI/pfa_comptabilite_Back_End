@@ -3,11 +3,8 @@ const query = require("../functions/db_query");
 exports.getservice = (req, res) => {
   let sql;
   if (req.query.limit) {
-    const limit = req.query.limit ;
-    const offset = req.query.offset ;
-    sql = `select (SELECT COUNT(*) FROM service  
-    where service.id_company =${req.params.id_company})
-     AS totalItems , service.* from service  where service.id_company=${req.params.id_company}
+    const {limit,offset} = req.query
+    sql = `select service.* from service  where service.id_company=${req.params.id_company}
     LIMIT ${limit} OFFSET ${offset}`;
   } else {//layout companies
     sql = `select service.* from service where service.id_company=${req.params.id_company}`;
@@ -84,3 +81,8 @@ exports.delete = (req, res) => {
   const sql = "delete from service where id_service = ?";
   query.sql_request(sql, values, res);
 };
+
+
+// (SELECT COUNT(*) FROM service  
+//     where service.id_company =${req.params.id_company})
+//      AS totalItems ,

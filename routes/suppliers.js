@@ -1,4 +1,4 @@
-const express = require("express"); /// imort express
+const express = require("express"); 
 const router = express.Router();
 const suppliers=require("../controllers/suppliers");
 const checkToken = require('../middleware/checkToken');

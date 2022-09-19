@@ -5,28 +5,18 @@ exports.getCustomers = (req, res) => {
   const { limit, offset } = req.query;
     const { id_company } = req.params;
 
-  const sql = `select 
-  (SELECT COUNT(*) FROM customer
-  join user join company on 
-    user.id_user=company.id_user and company.id_company=customer.id_company
-     where user.id_user=${id_user} and customer.id_company = ${id_company}) 
-     AS totalItems,
-     
-     customer.* from customer 
+  const sql = `select customer.* from customer 
   join user join company on 
     user.id_user=company.id_user and company.id_company=customer.id_company
      where user.id_user=${id_user} and customer.id_company = ${id_company} LIMIT ${limit} OFFSET ${offset}`;
   query.sql_request(sql, null, res, true);
 };
 
-
 exports.list_customer_select_option = (req, res) => {
   const { id_company } = req.params;
   const sql = `SELECT * from customer WHERE id_company = ${id_company}`;
   query.sql_request(sql, null, res, true);
 };
-
-
 
 exports.insert = (req, res) => {
   const {
@@ -86,3 +76,10 @@ exports.delete = (req, res) => {
   const sql = "delete from customer where id = ?";
   query.sql_request(sql, values, res);
 };
+
+
+// (SELECT COUNT(*) FROM customer
+// join user join company on 
+//   user.id_user=company.id_user and company.id_company=customer.id_company
+//    where user.id_user=${id_user} and customer.id_company = ${id_company}) 
+//    AS totalItems,

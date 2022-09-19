@@ -3,10 +3,8 @@ const query = require("../functions/db_query");
 exports.getproducts = (req, res) => {
   let sql;
   if (req.query.limit) {
-    const limit = req.query.limit ;
-    const offset = req.query.offset ;
-    sql = `select (SELECT COUNT(*) FROM product where product.id_company = ${req.params.id_company}) AS totalItems , 
-    suppliers.nom_suppliers,suppliers.adr_suppliers,product.* from suppliers join product on 
+    const {limit,offset} = req.query
+    sql = `select suppliers.nom_suppliers,suppliers.adr_suppliers,product.* from suppliers join product on 
     suppliers.id=product.id_suppliers where product.id_company= ${req.params.id_company} LIMIT ${limit} OFFSET ${offset}`;
   } else {//layout companies
     sql = `select product.* from product where product.id_company=${req.params.id_company}`;
@@ -95,3 +93,6 @@ exports.delete = (req, res) => {
   const sql = "delete from product where id_product = ?";
   query.sql_request(sql, values, res);
 };
+
+
+// (SELECT COUNT(*) FROM product where product.id_company = ${req.params.id_company}) AS totalItems , 

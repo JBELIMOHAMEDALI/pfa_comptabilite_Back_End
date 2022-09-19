@@ -6,8 +6,7 @@ exports.getCompanies = (req, res) => {
   let sql;
   if (req.query.limit) {
     const { limit, offset } = req.query;
-    sql = `select (SELECT COUNT(*) FROM company join user on user.id_user=company.id_user 
-    where user.id_user=${id_user}) AS totalItems , company.* from company 
+    sql = `select company.* from company 
     join user on user.id_user=company.id_user where user.id_user=${id_user}
     LIMIT ${limit} OFFSET ${offset}`;
   } else {//layout companies
@@ -71,3 +70,7 @@ exports.setSelectedCompany = (req, res) => {
       });
   });
 };
+
+
+// (SELECT COUNT(*) FROM company join user on user.id_user=company.id_user 
+//     where user.id_user=${id_user}) AS totalItems ,

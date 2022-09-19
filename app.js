@@ -13,6 +13,7 @@ const company = require("./routes/company");
 const products = require("./routes/products");
 const suppliers = require("./routes/suppliers");
 const service = require("./routes/service");
+const invoices = require("./routes/invoices");
 
 const accountingPlan = require("./routes/accountingPlan");
 const tax = require("./routes/tax");
@@ -69,6 +70,8 @@ app.use("/customer", customer);
 app.use("/products",products);
 app.use("/suppliers",suppliers);
 app.use("/service",service);
+app.use("/invoices",invoices);
+
 
 app.use((req, res) => {
   res.status(404).json({ error: "api not found" });

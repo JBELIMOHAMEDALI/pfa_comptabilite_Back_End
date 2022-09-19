@@ -1,16 +1,10 @@
 const query = require("../functions/db_query");
 
 exports.getsuppliers = (req, res) => {
- // console.log();
-//  const {id_compny} =req.params.id_company;
-//   console.log()
   let sql;
   if (req.query.limit) {
-    const limit = req.query.limit ;
-    const offset = req.query.offset ;
-    sql = `select (SELECT COUNT(*) FROM suppliers  
-    where suppliers.id_company =${req.params.id_company})
-     AS totalItems , suppliers.* from suppliers  where suppliers.id_company=${req.params.id_company}
+    const {limit,offset} = req.query;
+    sql = `select  suppliers.* from suppliers  where suppliers.id_company=${req.params.id_company}
     LIMIT ${limit} OFFSET ${offset}`;
   } else {//layout companies
     sql = `select suppliers.* from suppliers where suppliers.id_company=${req.params.id_company}`;
@@ -18,11 +12,6 @@ exports.getsuppliers = (req, res) => {
   query.sql_request(sql, null, res,true);
 
 };
-// exports.get1= (req, res) => {
-//   const { id_user } = req.decoded.user;
-//   const sql = `select * from suppliers WHERE id_company =${id_user}`;
-//   query.sql_request(sql, null, res, true);
-// };
 
 exports.insert = (req, res) => {
   const {
@@ -71,3 +60,7 @@ exports.delete = (req, res) => {
   const sql = "delete from suppliers where id = ?";
   query.sql_request(sql, values, res);
 };
+
+// (SELECT COUNT(*) FROM suppliers  
+//     where suppliers.id_company =${req.params.id_company})
+//      AS totalItems ,
