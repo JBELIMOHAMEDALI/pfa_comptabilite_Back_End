@@ -4,7 +4,7 @@ exports.getproducts = (req, res) => {
   let sql;
   if (req.query.limit) {
     const {limit,offset} = req.query
-    sql = `select suppliers.nom_suppliers,suppliers.adr_suppliers,product.* from suppliers join product on 
+    sql = `select * from suppliers join product on 
     suppliers.id=product.id_suppliers where product.id_company= ${req.params.id_company} LIMIT ${limit} OFFSET ${offset}`;
   } else {//layout companies
     sql = `select product.* from product where product.id_company=${req.params.id_company}`;
@@ -36,9 +36,8 @@ exports.insert = (req, res) => {
         sale_price,
         tax,
         cost,
-        expenses_account,
-        id_suppliers,
         id_company,
+        id_suppliers,
         id_accounting_plan 
         
       ]
@@ -63,7 +62,7 @@ exports.update = (req, res) => {
         id_company,
         id_suppliers,
         id_accounting_plan
-        ,id
+        ,id_product
       } = req.body;
       const values = [
         [
@@ -78,7 +77,7 @@ exports.update = (req, res) => {
             id_company,
             id_suppliers,
             id_accounting_plan,
-            ,id
+            ,id_product
           ]
         ]
       ];
