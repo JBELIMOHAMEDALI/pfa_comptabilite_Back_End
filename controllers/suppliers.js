@@ -4,7 +4,7 @@ exports.getsuppliers = (req, res) => {
   let sql;
   if (req.query.limit) {
     const {limit,offset} = req.query;
-    sql = `select  suppliers.* from suppliers  where suppliers.id_company=${req.params.id_company}
+    sql = `select (count(*) OVER()) AS totalItems , suppliers.* from suppliers  where suppliers.id_company=${req.params.id_company}
     LIMIT ${limit} OFFSET ${offset}`;
   } else {//layout companies
     sql = `select suppliers.* from suppliers where suppliers.id_company=${req.params.id_company}`;

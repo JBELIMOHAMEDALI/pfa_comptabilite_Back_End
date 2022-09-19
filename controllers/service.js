@@ -4,7 +4,7 @@ exports.getservice = (req, res) => {
   let sql;
   if (req.query.limit) {
     const {limit,offset} = req.query
-    sql = `select service.* from service  where service.id_company=${req.params.id_company}
+    sql = `select (count(*) OVER()) AS totalItems ,service.* from service  where service.id_company=${req.params.id_company}
     LIMIT ${limit} OFFSET ${offset}`;
   } else {//layout companies
     sql = `select service.* from service where service.id_company=${req.params.id_company}`;

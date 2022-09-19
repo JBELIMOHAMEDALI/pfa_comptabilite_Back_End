@@ -5,7 +5,7 @@ exports.getCustomers = (req, res) => {
   const { limit, offset } = req.query;
     const { id_company } = req.params;
 
-  const sql = `select customer.* from customer 
+  const sql = `select (count(*) OVER()) AS totalItems , customer.* from customer 
   join user join company on 
     user.id_user=company.id_user and company.id_company=customer.id_company
      where user.id_user=${id_user} and customer.id_company = ${id_company} LIMIT ${limit} OFFSET ${offset}`;

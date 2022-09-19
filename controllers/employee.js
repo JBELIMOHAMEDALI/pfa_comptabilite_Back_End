@@ -4,7 +4,7 @@ exports.getEmployees = (req, res) => {
   const { id_user } = req.decoded.user;
   const { id_company } = req.params;
   const { limit, offset } = req.query;
-  const sql = `select employee.* from employee 
+  const sql = `select (count(*) OVER()) AS totalItems ,employee.* from employee 
   join user join company on 
     user.id_user=company.id_user and company.id_company=employee.id_company
      where user.id_user=${id_user} and employee.id_company=${id_company} 
