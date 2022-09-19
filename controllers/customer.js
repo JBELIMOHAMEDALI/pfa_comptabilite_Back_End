@@ -3,22 +3,30 @@ const query = require("../functions/db_query");
 exports.getCustomers = (req, res) => {
   const { id_user } = req.decoded.user;
   const { limit, offset } = req.query;
-    const { id_company } = req.parmas;
+    const { id_company } = req.params;
 
   const sql = `select 
-  
   (SELECT COUNT(*) FROM customer
   join user join company on 
     user.id_user=company.id_user and company.id_company=customer.id_company
-     where user.id_user=${id_user} and customer.id_company${id_company}) 
+     where user.id_user=${id_user} and customer.id_company = ${id_company}) 
      AS totalItems,
      
      customer.* from customer 
   join user join company on 
     user.id_user=company.id_user and company.id_company=customer.id_company
-     where user.id_user=${id_user} and customer.id_company${id_company} LIMIT ${limit} OFFSET ${offset}`;
+     where user.id_user=${id_user} and customer.id_company = ${id_company} LIMIT ${limit} OFFSET ${offset}`;
   query.sql_request(sql, null, res, true);
 };
+
+
+exports.list_customer_select_option = (req, res) => {
+  const { id_company } = req.params;
+  const sql = `SELECT * from customer WHERE id_company = ${id_company}`;
+  query.sql_request(sql, null, res, true);
+};
+
+
 
 exports.insert = (req, res) => {
   const {
@@ -43,7 +51,7 @@ exports.insert = (req, res) => {
     ]
   ];
 
-  const sql = `INSERT INTO customer(fullname,email,phone address,company_name,payment_method,id_company) VALUES ?`;
+  const sql = `INSERT INTO customer(fullname,email,phone,address,company_name,payment_method,id_company) VALUES ?`;
 
   query.sql_request(sql, values, res);
 };
@@ -56,7 +64,6 @@ exports.update = (req, res) => {
         phone,
         company_name,
         payment_method,
-        id_company,
         id
       } = req.body;
       const values = [
@@ -67,10 +74,9 @@ exports.update = (req, res) => {
             phone,
             company_name,
             payment_method,
-            id_company,
-            id
+           id
       ];
-  const sql = `UPDATE customer SET fullname = ?, address = ?, email = ?,company_name = ?,payment_method = ?
+  const sql = `UPDATE customer SET fullname = ?, address = ?, email = ?, phone=? ,company_name = ?,payment_method = ?
     WHERE id = ?`;
   query.sql_request(sql, values, res);
 };

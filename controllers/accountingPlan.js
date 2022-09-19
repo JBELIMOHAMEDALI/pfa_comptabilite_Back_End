@@ -51,7 +51,12 @@ module.exports.importFile = (req, res) => {
     }
   });
 };
-
+exports.list_acc_selectop = (req, res) => {
+  const { id_company } = req.params;
+  const sql = `SELECT * from accounting_plan WHERE id_company = ${id_company}`;
+  query.sql_request(sql, null, res, true);
+};
+// 
 function importFileToDb(req, res) {
   const { id_company } = req.params;
   readXlsxFile(req.file.path)
