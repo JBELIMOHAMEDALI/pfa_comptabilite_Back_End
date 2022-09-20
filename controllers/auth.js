@@ -346,15 +346,6 @@ exports.logout = (req, res) => {
   const { id_user } = req.decoded.user;
   const sql = `UPDATE user set refresh = ? where id_user = ?`;
   query.sql_request(sql, [null, id_user], res);
-  // dbClient.query(sql, [null, id_user], (err, rows) => {
-  //   if (err) {
-  //     return res.status(500).json({
-  //       err,
-  //       message: "An error occured in server ! Retry later ",
-  //     });
-  //   }
-  //   return res.status(200).json({  });
-  // });
 };
 
 exports.refresh = (req, res) => {
@@ -368,16 +359,22 @@ exports.refresh = (req, res) => {
         message: "An error occured in server ! Retry later ",
       });
     }
-    const { refresh } = rows[0];
-    jwt.verify(refresh, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-      if (err) return res.sendStatus(403);
-      const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "2h",
+    if (rows[0]) {
+      const { refresh } = rows[0];
+      jwt.verify(refresh, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+        if (err) return res.sendStatus(403);
+        const accessToken = jwt.sign(
+          { user: decoded.user },
+          process.env.ACCESS_TOKEN_SECRET,
+          {
+            expiresIn: 15,
+          }
+        );
+        return res.status(200).json({ accessToken: accessToken });
       });
-      return res
-        .status(200)
-        .json({ accessToken: accessToken, refreshToken: refresh });
-    });
+    } else {
+      return res.sendStatus(403);
+    }
   });
 };
 

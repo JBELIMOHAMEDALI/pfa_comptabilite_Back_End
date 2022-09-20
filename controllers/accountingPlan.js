@@ -205,7 +205,7 @@ module.exports.addrow = (req, res) => {
 };
 
 module.exports.addAccountingPlan = (req, res) => {
-  const { source } = req.body;
-  const sql = "INSERT INTO accounting_plan_source (`source`,`upload`) VALUES ?";
-  query.sql_request(sql, [[[source, `${Date.now()}.xlsx`]]], res);
+  const { source,id_company } = req.body;
+  const sql = "INSERT INTO accounting_plan_source (`source`,`upload`,`id_company`) VALUES ?";
+  query.sql_request(sql, [[[source, `${Date.now()}.xlsx`,id_company]]], res);
 };

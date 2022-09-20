@@ -43,16 +43,15 @@ router.get(
     // session: false,
   }),
   (req, res) => {
-    const accessToken = jwt.sign(
-      {
-        user: req.user,
-      },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "2h" }
-    );
-    // const tokenEncrypted = encryptToken(accessToken);
+    // const accessToken = jwt.sign(
+    //   {
+    //     user: req.user,
+    //   },
+    //   process.env.ACCESS_TOKEN_SECRET,
+    //   { expiresIn: "1h" }
+    // );
     res.redirect(
-      `${process.env.CORS_ORIGIN}/app/redirection/${accessToken}`
+      `${process.env.CORS_ORIGIN}/app/redirection/${req.user.refreshToken}`
     );
   }
 ); //redirect empty LS and response !=null

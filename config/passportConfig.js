@@ -18,19 +18,38 @@ module.exports.initGooglePassportConfig = (passport) => {
         ],
         // passReqToCallback: true,
       },
-      async (request, accessToken, refreshToken, profile, done) => {
-        let sql = `select user.id_user,user.photo,user.profileId,user.firstname,user.lastname,user.email,user.provider
+      async (request, accessTokenMail, refreshTokenMail, profile, done) => {
+        let sql = `select user.id_user,user.photo,
+        user.profileId,user.firstname,user.lastname,user.email,user.provider
          from user where email=?`;
+         let refreshToken;
+         let refreshTokenData = {
+           email: profile.email,
+           firstname: profile.given_name,
+           lastname: profile.family_name,
+         };
         client.query(sql, [profile.email], (err, rows) => {
+          //id_user,lastname,firstname,email,photo
           if (err) return done(err);
           if (rows.length == 1) {
+            refreshTokenData = {
+              ...refreshTokenData,
+              photo: rows[0].photo,
+              id_user: rows[0].id_user,
+            };
+            refreshToken=jwt.sign({user:refreshTokenData},process.env.REFRESH_TOKEN_SECRET)
+
             if (rows[0].provider === "google") {
-              return done(null, rows[0]);
+              sql=`UPDATE user set refresh = ? where id_user = ?`
+              client.query(sql, [refreshToken,rows[0].id_user], (err, updated) => {
+                return done(null, { ...rows[0], refreshToken });
+              });
             } else {
               return done(null, false);
             }
           } else {
             //create google user
+
             const values = [
               [
                 [
@@ -52,11 +71,23 @@ module.exports.initGooglePassportConfig = (passport) => {
               "INSERT INTO user(profileId, lastname,firstname,photo,email,actif,provider) VALUES ?";
             client.query(sql, values, (err, rows) => {
               if (err) return done(err, null);
-              return done(null, {
-                ...profile,
-                nb_companies: 0,
-                id_user: rows.insertId,
-              });
+              const id_user=rows.insertId
+              refreshTokenData = {
+                ...refreshTokenData,
+                photo: `https://ui-avatars.com/api/?name=${profile.given_name
+                  .charAt(0)
+                  .toUpperCase()}`,
+                id_user: id_user,
+              };
+              refreshToken=jwt.sign({user:refreshTokenData},process.env.REFRESH_TOKEN_SECRET)
+              sql=`UPDATE user set refresh = ? where user.id_user= ?`
+              client.query(sql, [refreshToken,id_user], (err, rows) => {
+                return done(null, {
+                  ...profile,
+                  id_user: id_user,
+                  refreshToken,
+                });
+              })
             });
           }
         });
@@ -92,10 +123,8 @@ module.exports.initLocalPassportConfig = (passport) => {
           if (same) {
             const { id_user } = rows[0];
             sql = `    
-                  SELECT user.id_user,user.lastname,user.firstname,user.email,user.photo,
-                  COUNT(id_company) as nb_companies
-                  FROM COMPANY JOIN user 
-                  ON company.id_user=user.id_user                  
+                  SELECT user.id_user,user.lastname,user.firstname,user.email,user.photo                 
+                  FROM user                                  
                   where user.id_user=?
                 `;
             client.query(sql, [id_user], (err, rows) => {
@@ -116,24 +145,17 @@ module.exports.initLocalPassportConfig = (passport) => {
                   uid: -1,
                 }); //(server error,userfound or not,message)
               }
-              const { nb_companies } = user;
               const accessToken = jwt.sign(
                 {
-                  user: {
-                    ...user,
-                    nb_companies,
-                  },
+                  user,
                 },
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: "2h"}
+                { expiresIn: 15 }
               );
 
               const refreshToken = jwt.sign(
                 {
-                  user: {
-                    ...user,
-                    nb_companies,
-                  },
+                  user,
                 },
                 process.env.REFRESH_TOKEN_SECRET
               );

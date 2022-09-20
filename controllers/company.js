@@ -2,6 +2,7 @@ const query = require("../functions/db_query");
 const dbClient = require("../config/db_config");
 
 exports.getCompanies = (req, res) => {
+  
   const { id_user } = req.decoded.user;
   let sql;
   if (req.query.limit) {
@@ -10,7 +11,8 @@ exports.getCompanies = (req, res) => {
     join user on user.id_user=company.id_user where user.id_user=${id_user}
     LIMIT ${limit} OFFSET ${offset}`;
   } else {//layout companies
-    sql = `select company.* from company join user on user.id_user=company.id_user where user.id_user=${id_user}`;
+    sql = `select company.* from company 
+    join user on user.id_user=company.id_user where user.id_user=${id_user}`;
   }
 
   query.sql_request(sql, null, res, true);

@@ -78,7 +78,6 @@ exports.update = (req, res) => {
       //   UPDATE `product` SET `id_product`='[value-1]',`name`='[value-2]',`ref`='[value-3]',`quantity`='[value-4]',`description`='[value-5]',`sale_price`='[value-6]',`income_account`='[value-7]',`tax`='[value-8]',`cost`='[value-9]',`expenses_account`='[value-10]',`photo`='[value-11]',`id_company`='[value-12]' WHERE 1
       const sql = `UPDATE product SET name = ?,ref = ?,quantity = ?,description = ?,sale_price = ?,tax = ?,cost = ?,id_suppliers = ?,id_accounting_plan = ? WHERE id_product = ?`;
       query.sql_request(sql, values, res);
-      console.log(values);
 };
 
 exports.delete = (req, res) => {
