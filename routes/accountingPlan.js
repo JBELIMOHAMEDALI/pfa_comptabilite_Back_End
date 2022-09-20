@@ -7,7 +7,12 @@ router.post('/import/:id_company',checkAuth,accountingPlan.importFile);
 router.delete('/unlink/:id_company/:uploadFile',checkAuth,accountingPlan.unlinkFile);
 // router.get('/export/:filename',checkAuth,accountingPlan.exportFile);
 router.get('/get/sources/:id_company',checkAuth,accountingPlan.getAllSources);
+
+
 router.get('/get/:id_company/:uploadFile',checkAuth,accountingPlan.getaccountingPlanByCompany);
+
+
+
 router.get('/list_acc_selectop/:id_company',checkAuth,accountingPlan.list_acc_selectop);
 
  

@@ -56,7 +56,7 @@ exports.list_acc_selectop = (req, res) => {
   const sql = `SELECT * from accounting_plan WHERE id_company = ${id_company}`;
   query.sql_request(sql, null, res, true);
 };
-// 
+//
 function importFileToDb(req, res) {
   const { id_company } = req.params;
   readXlsxFile(req.file.path)
@@ -64,23 +64,27 @@ function importFileToDb(req, res) {
       const { filename, originalname } = req.file;
 
       let sql =
-        "INSERT INTO accounting_plan_source (`source`,`upload`) VALUES ?";
-      dbClient.query(sql, [[[originalname, filename]]], (err, rows) => {
-        if (!err) {
-          fileRows.map((row) => {
-            row.push(rows.insertId);
-            row.push(id_company);
-          });
-          sql =
-            "INSERT INTO accounting_plan (`account_number`,`description`,`id_source`,`id_company`) VALUES ?";
-          query.sql_request(sql, [fileRows], res);
-        } else {
-          return res.status(500).json({
-            err: true,
-            message: "Operation not performed ! Try again later",
-          });
+        "INSERT INTO accounting_plan_source (`source`,`upload`,`id_company`) VALUES ?";
+      dbClient.query(
+        sql,
+        [[[originalname, filename, id_company]]],
+        (err, rows) => {
+          if (!err) {
+            fileRows.map((row) => {
+              row.push(rows.insertId);
+              row.push(id_company);
+            });
+            sql =
+              "INSERT INTO accounting_plan (`account_number`,`description`,`id_source`,`id_company`) VALUES ?";
+            query.sql_request(sql, [fileRows], res);
+          } else {
+            return res.status(500).json({
+              err: true,
+              message: "Operation not performed ! Try again later",
+            });
+          }
         }
-      });
+      );
     })
     .catch((error) => {
       return res.status(500).json({
@@ -145,18 +149,13 @@ module.exports.getaccountingPlanByCompany = (req, res) => {
   const { id_company, uploadFile } = req.params;
   const { limit, offset } = req.query;
   let sql;
-  // , (SELECT COUNT(*) FROM accounting_plan 
-  //   join accounting_plan_source
-  //   on accounting_plan_source.id=accounting_plan.id_source AND                      
-  //   accounting_plan_source.upload = ?) 
-  //   AS totalItems  
   if (req.query.limit) {
-    sql = `select accounting_plan.id , accounting_plan.account_number , accounting_plan.description, 
-    accounting_plan.id_company 
-    from accounting_plan join accounting_plan_source
-    join company on company.id_company=accounting_plan.id_company and         
+    sql = `SELECT accounting_plan.id,accounting_plan.account_number,accounting_plan.description , 
+    (count(*) over()) AS totalItems FROM accounting_plan_source JOIN accounting_plan ON
     accounting_plan_source.id=accounting_plan.id_source
-     where accounting_plan.id_company=? and accounting_plan_source.upload =?
+    where accounting_plan_source.id_company=?
+    and accounting_plan_source.upload=? 
+    
      LIMIT ${limit} OFFSET  ${offset}`;
   } else {
     //export case
@@ -164,23 +163,17 @@ module.exports.getaccountingPlanByCompany = (req, res) => {
     from accounting_plan join accounting_plan_source
     join company on company.id_company=accounting_plan.id_company and
     accounting_plan_source.id=accounting_plan.id_source
-     where accounting_plan.id_company=? and accounting_plan_source.upload =? `;
+     where accounting_plan.id_company=? 
+     and accounting_plan_source.upload =? `;
   }
 
-  query.sql_request(
-    sql,
-    req.query.limit
-      ? [uploadFile, id_company, uploadFile]
-      : [id_company, uploadFile],
-    res,
-    true
-  );
+  query.sql_request(sql, [id_company, uploadFile], res, true);
 };
 
 module.exports.getAllSources = (req, res) => {
-  const sql = `select accounting_plan_source.* from accounting_plan_source 
-join company join accounting_plan on company.id_company=accounting_plan.id_company 
-where accounting_plan.id_company = ? GROUP BY id`;
+  const sql = `select accounting_plan_source.* from accounting_plan_source join company 
+  on company.id_company=accounting_plan_source.id_company 
+  where accounting_plan_source.id_company = ? `;
   query.sql_request(sql, [req.params.id_company], res);
 };
 

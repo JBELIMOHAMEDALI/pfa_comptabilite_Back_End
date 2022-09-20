@@ -374,7 +374,6 @@ exports.refresh = (req, res) => {
       const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "2h",
       });
-      console.log(accessToken);
       return res
         .status(200)
         .json({ accessToken: accessToken, refreshToken: refresh });
