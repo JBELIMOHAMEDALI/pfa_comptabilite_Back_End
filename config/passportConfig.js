@@ -1,7 +1,7 @@
 const GoogleStrategy = require("passport-google-oauth2").Strategy;
 const client = require("./db_config");
 const LocalStrategy = require("passport-local").Strategy;
-const { encryptToken } = require("../functions/encryption");
+// const { encryptToken } = require("../functions/encryption");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -75,9 +75,10 @@ module.exports.initGooglePassportConfig = (passport) => {
 
 module.exports.initLocalPassportConfig = (passport) => {
   const authenticateUser = (email, password, done) => {
-    let sql = ` SELECT user.id_user,user.password from user where USER.email=? AND USER.actif=?and provider=? `;
+    let sql = ` SELECT user.id_user,user.password from user where USER.email=? 
+    AND USER.actif=?and provider=? `;
 
-    client.query(sql, [email, "1", "ATA"], (err, rows) => {
+    client.query(sql, [email, "1", "MTX"], (err, rows) => {
       if (err) {
         return done(null, {
           status: 500,
@@ -91,20 +92,22 @@ module.exports.initLocalPassportConfig = (passport) => {
           if (same) {
             const { id_user } = rows[0];
             sql = `    
-                  SELECT user.id_user,user.lastname,user.firstname,user.email,user.photo,COUNT(id_company) as nb_companies
+                  SELECT user.id_user,user.lastname,user.firstname,user.email,user.photo,
+                  COUNT(id_company) as nb_companies
                   FROM COMPANY JOIN user 
                   ON company.id_user=user.id_user                  
                   where user.id_user=?
                 `;
             client.query(sql, [id_user], (err, rows) => {
               const user = rows[0];
-              if (err)
+              if (err) {
                 return done(null, {
                   status: 500,
                   err: true,
                   message: "Server error ",
                   uid: -1,
                 });
+              }
               if (user == null) {
                 return done(null, {
                   status: 404,
@@ -122,17 +125,38 @@ module.exports.initLocalPassportConfig = (passport) => {
                   },
                 },
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: process.env.EXPIRES_IN }
+                { expiresIn: "2h"}
               );
 
-              const render = {
-                status: 200,
-                err: false,
-                message: "Auth successfull !",
-                accessToken,
-                uid: user.id_user,
-              };
-              return done(null, render);
+              const refreshToken = jwt.sign(
+                {
+                  user: {
+                    ...user,
+                    nb_companies,
+                  },
+                },
+                process.env.REFRESH_TOKEN_SECRET
+              );
+              sql = `UPDATE user SET refresh = ? where id_user = ? `;
+              client.query(sql, [refreshToken, id_user], (err, rows) => {
+                if (err) {
+                  return done(null, {
+                    status: 500,
+                    err: true,
+                    message: "Server error ",
+                    uid: -1,
+                  });
+                }
+                const render = {
+                  status: 200,
+                  err: false,
+                  message: "Auth successfull !",
+                  accessToken,
+                  refreshToken,
+                  uid: id_user,
+                };
+                return done(null, render);
+              });
             });
           } else {
             return done(

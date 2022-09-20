@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require("../controllers/auth");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const checkToken = require('../middleware/checkToken');
 
 router.post(
   "/signin",
@@ -10,15 +11,7 @@ router.post(
     failureFlash: true,
   }),
   (req, res) => {
-    const { uid, status } = req.user;
-    // if (uid === -1) {
-    //   req.session.destroy();
-    // } else {
-    //   const hour = 3600000;
-    //   req.session.cookie.expires = new Date(Date.now() + hour);
-    //   req.session.cookie.maxAge = hour;
-    // }
-    // req.session.save()
+    const { status } = req.user;
     return res.status(status).json(req.user);
   }
 );
@@ -29,6 +22,9 @@ router.get("/validate/:hasheduser", auth.validate);
 router.post("/verify/reset/email", auth.verify_reset_email);
 router.post("/verify/reset/code", auth.verify_reset_code);
 router.put("/reset/password", auth.reset_password);
+
+router.post('/refresh',auth.refresh)
+
 
 router.get(
   "/google",
@@ -52,7 +48,7 @@ router.get(
         user: req.user,
       },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: process.env.EXPIRES_IN }
+      { expiresIn: "2h" }
     );
     // const tokenEncrypted = encryptToken(accessToken);
     res.redirect(
@@ -61,6 +57,6 @@ router.get(
   }
 ); //redirect empty LS and response !=null
 
-router.post("/logout", auth.logout);
+router.delete("/logout", checkToken,auth.logout);
 
 module.exports = router;

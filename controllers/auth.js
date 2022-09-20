@@ -1,15 +1,16 @@
 const bcrypt = require("bcrypt");
 const dbClient = require("../config/db_config");
-const jwt = require("jsonwebtoken");
 const mailer = require("../functions/mailer");
-const {encryptData,encryptToken} = require("../functions/encryption");
+const { encryptData, encryptToken } = require("../functions/encryption");
 const query = require("../functions/db_query");
+const jwt = require("jsonwebtoken");
 
 exports.validate = (req, res) => {
   const crypted_user = req.params.hasheduser;
   try {
-    let sql = "select * from user where crypted = ? and actif = ? and provider = ?";
-    dbClient.query(sql, [crypted_user, "0", "ATA"], (err, rows) => {
+    let sql =
+      "select * from user where crypted = ? and actif = ? and provider = ?";
+    dbClient.query(sql, [crypted_user, "0", "MTX"], (err, rows) => {
       if (err)
         return res.status(500).json({
           err: true,
@@ -50,7 +51,7 @@ exports.validate = (req, res) => {
 //   const { email, password } = req.body;
 //   let sql = ` SELECT DISTINCT user.* from user where USER.email=? AND USER.actif=?and provider=? `;
 
-//   dbClient.query(sql, [email, "1", "ATA"], (err, rows) => {
+//   dbClient.query(sql, [email, "1", "MTX"], (err, rows) => {
 //     if (err) {
 //       return res.status(500).json({
 //         err: true,
@@ -68,10 +69,10 @@ exports.validate = (req, res) => {
 //         if (same) {
 //           const user = rows[0]; //user without company test
 //           const { id_user, crypted } = rows[0];
-//           sql = `    
+//           sql = `
 //                 SELECT user.*, COUNT(id_company) as nb_companies
-//                 FROM COMPANY JOIN user 
-//                 ON company.id_user=user.id_user                  
+//                 FROM COMPANY JOIN user
+//                 ON company.id_user=user.id_user
 //                 where user.id_user=?
 //               `;
 //           dbClient.query(sql, [id_user], (err, rows) => {
@@ -161,7 +162,9 @@ exports.signup = (req, res) => {
                     [
                       lastname.charAt(0).toUpperCase() + lastname.slice(1),
                       firstname.charAt(0).toUpperCase() + firstname.slice(1),
-                      `https://ui-avatars.com/api/?name=${firstname.charAt(0).toUpperCase()}`,
+                      `https://ui-avatars.com/api/?name=${firstname
+                        .charAt(0)
+                        .toUpperCase()}`,
                       email,
                       hashedPassword,
                       encryptedMail,
@@ -204,7 +207,7 @@ exports.signup = (req, res) => {
 exports.verify_reset_email = (req, res, next) => {
   const { email } = req.body;
   let sql = "select * from user where email = ? AND actif =? AND provider=?";
-  dbClient.query(sql, [email, "1", "ATA"], (err, rows) => {
+  dbClient.query(sql, [email, "1", "MTX"], (err, rows) => {
     if (!err) {
       switch (rows.length) {
         case 0:
@@ -276,8 +279,9 @@ exports.verify_reset_email = (req, res, next) => {
 };
 exports.verify_reset_code = (req, res) => {
   const { email, code } = req.body;
-  let sql = "select reset_code from user where email = ? and actif =? and provider =?";
-  dbClient.query(sql, [email, "1", "ATA"], (err, rows) => {
+  let sql =
+    "select reset_code from user where email = ? and actif =? and provider =?";
+  dbClient.query(sql, [email, "1", "MTX"], (err, rows) => {
     if (err) {
       return res.status(500).json({
         err: true,
@@ -332,14 +336,50 @@ exports.reset_password = (req, res) => {
       "UPDATE user SET password = ?,reset_code=?  WHERE email = ? and actif = ? and provider = ?";
     return query.sql_request(
       sql,
-      [hashedPassword, null, email, "1", "ATA"],
+      [hashedPassword, null, email, "1", "MTX"],
       res
     );
   });
 };
 
 exports.logout = (req, res) => {
-  
+  const { id_user } = req.decoded.user;
+  const sql = `UPDATE user set refresh = ? where id_user = ?`;
+  query.sql_request(sql, [null, id_user], res);
+  // dbClient.query(sql, [null, id_user], (err, rows) => {
+  //   if (err) {
+  //     return res.status(500).json({
+  //       err,
+  //       message: "An error occured in server ! Retry later ",
+  //     });
+  //   }
+  //   return res.status(200).json({  });
+  // });
+};
+
+exports.refresh = (req, res) => {
+  const { token } = req.body;
+  if (token == null) return res.sendStatus(401);
+  const sql = `select refresh from user where refresh = ?`;
+  dbClient.query(sql, [token], (err, rows) => {
+    if (err) {
+      return res.status(500).json({
+        err,
+        message: "An error occured in server ! Retry later ",
+      });
+    }
+    const { refresh } = rows[0];
+    jwt.verify(refresh, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+      if (err) return res.sendStatus(403);
+      const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "2h",
+      });
+      console.log(accessToken);
+      return res
+        .status(200)
+        .json({ accessToken: accessToken, refreshToken: refresh });
+    });
+  });
 };
 
 //The Client ID is a public identifier of your application.

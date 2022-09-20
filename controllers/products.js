@@ -43,7 +43,6 @@ exports.insert = (req, res) => {
       ]
     ]
   ];
-console.log(values)
   const sql = `INSERT INTO product  (name, ref, quantity, description, sale_price, tax, cost, id_company, id_suppliers, id_accounting_plan) VALUES ?`;
 
   query.sql_request(sql, values, res);
