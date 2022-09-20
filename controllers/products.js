@@ -4,7 +4,7 @@ exports.getproducts = (req, res) => {
   let sql;
   if (req.query.limit) {
     const {limit,offset} = req.query
-    sql = `select * from suppliers join product on 
+    sql = `select (count(*) OVER()) AS totalItems , suppliers.*,product.* from suppliers join product on 
     suppliers.id=product.id_suppliers where product.id_company= ${req.params.id_company} LIMIT ${limit} OFFSET ${offset}`;
   } else {//layout companies
     sql = `select product.* from product where product.id_company=${req.params.id_company}`;
@@ -21,7 +21,6 @@ exports.insert = (req, res) => {
     sale_price,
     tax,
     cost,
-    expenses_account,
     id_company,
     id_suppliers,
     id_accounting_plan 
