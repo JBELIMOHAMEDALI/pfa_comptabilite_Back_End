@@ -150,7 +150,7 @@ module.exports.initLocalPassportConfig = (passport) => {
                   user,
                 },
                 process.env.ACCESS_TOKEN_SECRET,
-                { expiresIn: 15 }
+                { expiresIn: "1h" }
               );
 
               const refreshToken = jwt.sign(

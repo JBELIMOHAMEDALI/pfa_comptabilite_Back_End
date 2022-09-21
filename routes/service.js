@@ -8,4 +8,7 @@ router.post("/add",checkToken,service.insert);
 router.put("/update",checkToken,service.update);
 router.delete("/delete/:id",checkToken,service.delete);
 
+
+router.get("/get/transactions/:id_comapny/:operation",checkToken,service.getTransactions)
+
 module.exports=router;

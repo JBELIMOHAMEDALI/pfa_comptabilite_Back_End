@@ -367,7 +367,7 @@ exports.refresh = (req, res) => {
           { user: decoded.user },
           process.env.ACCESS_TOKEN_SECRET,
           {
-            expiresIn: 15,
+            expiresIn: "1h",
           }
         );
         return res.status(200).json({ accessToken: accessToken });
