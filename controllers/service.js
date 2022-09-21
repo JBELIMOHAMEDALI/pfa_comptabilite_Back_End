@@ -5,7 +5,7 @@ exports.getservice = (req, res) => {
   if (req.query.limit) {
     const { limit, offset } = req.query;
     sql = `select (count(*) OVER()) AS totalItems ,service.* from service  where service.id_company=${req.params.id_company}
-    LIMIT ${limit} OFFSET ${offset}`;
+    and operation = ${req.params.operation} LIMIT ${limit} OFFSET ${offset}`;
   } else {
     //layout companies
     sql = `select service.* from service where service.id_company=${req.params.id_company}`;
@@ -20,6 +20,7 @@ exports.insert = (req, res) => {
     description,
     sale_price,
     tax,
+    operation,
     id_company,
     id_suppliers,
     id_accounting_plan,
@@ -32,6 +33,7 @@ exports.insert = (req, res) => {
     description,
         sale_price,
         tax,
+        operation,
         id_company,
         id_suppliers,
         id_accounting_plan,
@@ -39,7 +41,7 @@ exports.insert = (req, res) => {
     ],
   ];
   //
-  const sql = `INSERT INTO service (name, ref, description, sale_price, tax, id_company, id_suppliers, id_accounting_plan)  VALUES  ?`;
+  const sql = `INSERT INTO service (name, ref, description, sale_price, tax,operation, id_company, id_suppliers, id_accounting_plan)  VALUES  ?`;
 
   query.sql_request(sql, values, res);
 };
