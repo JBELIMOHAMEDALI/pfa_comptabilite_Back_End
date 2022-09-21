@@ -90,7 +90,7 @@ exports.getTransactions = (req, res) => {
   const {limit,offset} = req.query
   const {operation,id_company}=req.params
   const sql=`
-  SELECT (count(*) OVER()) AS totalItems , ser.* from service ser 
+  SELECT ser.*,sup.*,acc.*,com.name as companyName,com.domain , (count(*) OVER()) AS totalItems from service ser 
   JOIN company com join suppliers sup
   JOIN accounting_plan acc on ser.id_company = com.id_company 
   and ser.id_suppliers = sup.id and ser.id_accounting_plan = acc.id 

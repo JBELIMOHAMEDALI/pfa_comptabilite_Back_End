@@ -31,9 +31,9 @@ exports.insert = (req, res) => {
   const values = [
     [
       [fullname,
-        address,
         email,
         phone,
+        address,
         company_name,
         payment_method,
         id_company
