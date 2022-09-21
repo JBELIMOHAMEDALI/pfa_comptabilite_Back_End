@@ -80,12 +80,13 @@ exports.getTransactions = (req, res) => {
   const {limit,offset} = req.query
   const {operation,id_company}=req.params
   const sql=`
-  SELECT (count() OVER()) AS totalItems , ser.* from service ser 
+  SELECT (count(*) OVER()) AS totalItems , ser.* from service ser 
   JOIN company com join suppliers sup
   JOIN accounting_plan acc on ser.id_company = com.id_company 
-  and ser.id_suppliers = sup.id and ser.id_accounting_plan = acc.id WHERE ser.id_company = ${id_company}
-  and ser.operation = ${operation} LIMIT ${limit} OFFSET ${offset};
-  
+  and ser.id_suppliers = sup.id and ser.id_accounting_plan = acc.id 
+  WHERE ser.id_company = ?
+  and ser.operation = ? 
+  LIMIT ${limit} OFFSET ${offset}  
   `
-  query.sql_request(sql, null, res,true);
+  query.sql_request(sql, [id_company,operation], res,true);
 };

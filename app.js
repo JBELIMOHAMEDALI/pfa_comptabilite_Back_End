@@ -69,7 +69,7 @@ app.use("/accounting/plan", accountingPlan);
 app.use("/customer", customer);
 app.use("/products",products);
 app.use("/suppliers",suppliers);
-app.use("/service",service);
+app.use("/services",service);
 app.use("/transactions",transactions);
 
 
